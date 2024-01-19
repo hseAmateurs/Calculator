@@ -6,6 +6,7 @@
 #define CALCULATOR_TOKEN_H
 
 #include <string>
+#include <map>
 
 class Token {
 public:
@@ -28,11 +29,13 @@ public:
 
     const std::string value;
     const TokenType tokenType;
+    const char tokenPriority;
     const OperatorType operatorType;
 
-    Token(std::string value, TokenType tokenType, OperatorType operatorType = OperatorType::NONE)
+    Token(std::string value, TokenType tokenType, char tokenPriority, OperatorType operatorType = OperatorType::NONE)
             : value(std::move(value)),
               tokenType(tokenType),
+              tokenPriority(tokenPriority),
               operatorType(operatorType) { };
 };
 
