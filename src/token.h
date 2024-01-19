@@ -29,13 +29,13 @@ public:
 
     const std::string value;
     const TokenType tokenType;
-    const char tokenPriority;
+    const char operatorPriority;
     const OperatorType operatorType;
 
-    Token(std::string value, TokenType tokenType, char tokenPriority, OperatorType operatorType = OperatorType::NONE)
+    Token(std::string value, TokenType tokenType, char operatorPriority = -1, OperatorType operatorType = OperatorType::NONE)
             : value(std::move(value)),
               tokenType(tokenType),
-              tokenPriority(tokenPriority),
+              operatorPriority(operatorPriority),
               operatorType(operatorType) { };
 };
 
