@@ -6,7 +6,6 @@
 #define CALCULATOR_TOKEN_H
 
 #include <string>
-#include <utility>
 
 class Token {
 public:
@@ -27,18 +26,14 @@ public:
         BINARY
     };
 
-    Token(std::string value, TokenType tokenType, OperatorType operatorType = OperatorType::NONE);
-
-private:
-    union Value {
-        std::string str;
-        int int_num;
-        double double_num;
-    };
-
-    Value value;
+    const std::string value;
     const TokenType tokenType;
     const OperatorType operatorType;
+
+    Token(std::string value, TokenType tokenType, OperatorType operatorType = OperatorType::NONE)
+            : value(std::move(value)),
+              tokenType(tokenType),
+              operatorType(operatorType) { };
 };
 
 #endif //CALCULATOR_TOKEN_H
