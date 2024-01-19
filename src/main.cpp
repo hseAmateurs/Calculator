@@ -3,11 +3,16 @@
 //
 
 #include <iostream>
-#include <string>
+#include <vector>
 #include "token.h"
+#include "mathExpr.h"
 
 int main() {
-    std::string expression = "8 + log2(18) / 3.14) * sqrt(0.11^ (-3)/ 0.02";
-    Token t("123", Token::INT);
+    MathExpr expression("8 - 9 / 2*(sin(x))");
+//    getline(std::cin, expression);
+    std::vector<Token> tokens;
+    tokens = expression.tokenize(MathExpr::Type::MAIN);
+    tokens.emplace_back("a", Token::VAR, 4);
+    std::cout << "end\n";
     return 0;
 }

@@ -5,10 +5,10 @@ set(CMAKE_CXX_STANDARD 14)
 
 set(SOURCE_FILES
         src/main.cpp
-        src/tokenizer.cpp
-        src/tokenizer.hpp
+        src/mathExpr.cpp
+        src/mathExpr.h
         src/token.h
-        src/token.cpp)
+)
 
 add_executable(Calculator ${SOURCE_FILES})
 
