@@ -29,14 +29,14 @@ public:
 
     const std::string value;
     const TokenType tokenType;
-    const char operatorPriority;
     const OperatorType operatorType;
+    const char operatorPriority;
 
-    Token(std::string value, TokenType tokenType, char operatorPriority = -1, OperatorType operatorType = OperatorType::NONE)
+    Token(std::string value, TokenType tokenType, OperatorType operatorType = OperatorType::NONE, char operatorPriority = -1)
             : value(std::move(value)),
               tokenType(tokenType),
-              operatorPriority(operatorPriority),
-              operatorType(operatorType) { };
+              operatorType(operatorType),
+              operatorPriority(operatorPriority) { };
 };
 
 #endif //CALCULATOR_TOKEN_H
