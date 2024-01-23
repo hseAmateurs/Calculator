@@ -43,6 +43,7 @@
 
 # CMake
 cmake-build-*/
+shuntingYard
 
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
