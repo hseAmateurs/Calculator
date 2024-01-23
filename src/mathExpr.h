@@ -25,14 +25,18 @@ public:
 
     std::vector<Token> tokenize(Type type);
 
+
 private:
+
     char getOperatorPriority(const char &operatorName) const;
 
-    void handleMainExpr();
+    Token::TokenType getCharType(const char &ch) const;
 
-    void handleSecondaryExpr(std::vector<Token> &tokens);
+    void handleDefinition();
 
-    bool isOperator(const char &target);
+    void handleDeclaration();
+
+    bool isOperator(const char &target) const;
 
     void error(const std::string &msg) const;
 

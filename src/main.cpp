@@ -9,7 +9,7 @@
 
 int main() {
     setbuf(stdout, 0);
-    MathExpr expression("1+(-2)1");
+    MathExpr expression("sin(5*(x) + 9) - 22/984^(f(xm, y+(90-8)))");
     std::vector<Token> tokens;
     tokens = expression.tokenize(MathExpr::Type::MAIN);
     for (int i = 0; i < tokens.size(); ++i) {

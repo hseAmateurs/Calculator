@@ -11,6 +11,7 @@
 class Token {
 public:
     enum TokenType {
+        UNDEFINED,
         INT,
         DOUBLE,
         OPERATOR,
@@ -32,7 +33,8 @@ public:
     OperatorType operatorType;
     char operatorPriority;
 
-    Token(std::string value, TokenType tokenType, OperatorType operatorType = OperatorType::NONE, char operatorPriority = -1)
+    Token(std::string value, TokenType tokenType, OperatorType operatorType = OperatorType::NONE,
+          char operatorPriority = -1)
             : value(std::move(value)),
               tokenType(tokenType),
               operatorType(operatorType),
