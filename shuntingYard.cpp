@@ -1,4 +1,3 @@
-#include <iostream>
 #include <string>
 #include <vector>
 #include <cmath>
@@ -42,7 +41,7 @@ void ShuntingYard::computeForParantheses(vector<double> &outputStack, const Toke
                     break;
                 case '-':
                     if (token.operatorType == Token::BINARY)
-                        outputStack.push_back(a - b);
+                        outputStack.push_back(b - a);
                     else {
                         outputStack.push_back(b);
                         outputStack.push_back(-a);
@@ -52,17 +51,17 @@ void ShuntingYard::computeForParantheses(vector<double> &outputStack, const Toke
                     outputStack.push_back(a * b);
                     break;
                 case '/':
-                    outputStack.push_back(a / b);
+                    outputStack.push_back(b / a);
                     break;
                 case '^':
-                    outputStack.push_back(pow(a, b));
+                    outputStack.push_back(pow(b, a));
                     break;
             }
     }
 }
 
 void ShuntingYard::compute(const vector<Token> &input, vector<Token> &operatorStack, vector<double> &outputStack, const Token &token,
-             const bool &isSecondLoop) {
+                           const bool &isSecondLoop) {
     switch (token.tokenType) {
         case Token::INT:
         case Token::DOUBLE:
@@ -87,7 +86,7 @@ void ShuntingYard::compute(const vector<Token> &input, vector<Token> &operatorSt
                                     break;
                                 case '-':
                                     if (operatorStack.back().operatorType == Token::BINARY)
-                                        outputStack.push_back(a - b);
+                                        outputStack.push_back(b - a);
                                     else {
                                         outputStack.push_back(b);
                                         outputStack.push_back(-a);
@@ -97,10 +96,10 @@ void ShuntingYard::compute(const vector<Token> &input, vector<Token> &operatorSt
                                     outputStack.push_back(a * b);
                                     break;
                                 case '/':
-                                    outputStack.push_back(a / b);
+                                    outputStack.push_back(b / a);
                                     break;
                                 case '^':
-                                    outputStack.push_back(pow(a, b));
+                                    outputStack.push_back(pow(b, a));
                                     break;
                             }
                             operatorStack.pop_back();
