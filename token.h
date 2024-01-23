@@ -27,10 +27,10 @@ public:
         BINARY
     };
 
-    const std::string value;
-    const TokenType tokenType;
-    const OperatorType operatorType;
-    const char operatorPriority;
+    std::string value;
+    TokenType tokenType;
+    OperatorType operatorType;
+    char operatorPriority;
 
     Token(std::string value, TokenType tokenType, OperatorType operatorType = OperatorType::NONE, char operatorPriority = -1)
             : value(std::move(value)),

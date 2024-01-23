@@ -3,92 +3,131 @@
 #include <vector>
 #include <cmath>
 #include "token.h"
+#include "shuntingYard.h"
 using namespace std;
 
-
-
-double sumUp(const vector<Token>& input){
+double ShuntingYard::sumUp(const vector<Token> &input) {
     vector<Token> operatorStack;
     vector<double> outputStack;
     Token token = Token("0", Token::INT);
     int i = 0;
-    for (;;){
+    bool isSecondLoop = false;
+    for (;;) {
         if (i < input.size())
             token = input[i];
-        else
-            token = operatorStack[i % input.size()];
-        switch (token.tokenType) {
-            case Token::INT:
-            case Token::DOUBLE:
-                outputStack.push_back(stod(token.value));
-                break;
-            case Token::OPERATOR:
-                switch (token.operatorType) {
-                    case Token::UNARY:
-                        operatorStack.push_back(token);
-                        break;
-                    case Token::BINARY:
-                        if (!operatorStack.empty() && operatorStack.back().operatorPriority >= token.operatorPriority && operatorStack.back().value != "(") {
-                            while (operatorStack.back().operatorPriority >= token.operatorPriority) {
-                                double a = outputStack.back();
-                                outputStack.pop_back();
-                                double b = outputStack.back();
-                                outputStack.pop_back();
-                                switch (operatorStack.back().value[0]) {
-                                    case '+':
-                                        outputStack.push_back(a + b);
-                                        break;
-                                    case '-':
-                                        outputStack.push_back(a - b);
-                                        break;
-                                    case '*':
-                                        outputStack.push_back(a * b);
-                                        break;
-                                    case '/':
-                                        outputStack.push_back(a / b);
-                                        break;
-                                    case '^':
-                                        outputStack.push_back(a + b);
-                                        break;
-                                }
-                                if (operatorStack.back().value == "(") break;
-                            }
-                        }
-                        operatorStack.push_back(token);
-                        break;
-                    case Token::NONE:
-                        break;
-                }
-                break;
-            case Token::L_PARANTHESIS:
-                operatorStack.push_back(token);
-                break;
-            case Token::R_PARANTHESIS:
-                break;
-            case Token::VAR:
-                break;
-            case Token::FUNC:
-                break;
-            case Token::SEPARATOR:
+        else {
+            isSecondLoop = true;
+            if (!operatorStack.empty())
+                token = operatorStack.back();
+            else
                 break;
         }
+        compute(input, operatorStack, outputStack, token, isSecondLoop);
         i++;
     }
-
     return outputStack.back();
 }
 
-int main(){
-    vector<int> outputStack;
-    vector<Token> operatorStack;
-    vector<Token> tokens;
-    tokens.push_back(Token("12", Token::INT));
-    tokens.push_back(Token("+", Token::OPERATOR, Token::BINARY, 1));
-    tokens.push_back(Token("12", Token::INT));
-    tokens.push_back(Token("*", Token::OPERATOR, Token::BINARY, 2));
-    //tokens.push_back(Token("(", Token::L_PARANTHESIS, Token::UNARY, 4));
-    //tokens.push_back(Token("-", Token::OPERATOR, Token::UNARY, 3));
-    tokens.push_back(Token("3", Token::INT));
-    //tokens.push_back(Token(")", Token::R_PARANTHESIS, Token::UNARY, 4));
-    cout << sumUp(tokens);
+void ShuntingYard::computeForParantheses(vector<double> &outputStack, const Token &token) {
+    switch (token.operatorType) {
+        case Token::UNARY:
+        case Token::BINARY:
+            double a = outputStack.back();
+            outputStack.pop_back();
+            double b = outputStack.back();
+            outputStack.pop_back();
+            switch (token.value[0]) {
+                case '+':
+                    outputStack.push_back(a + b);
+                    break;
+                case '-':
+                    if (token.operatorType == Token::BINARY)
+                        outputStack.push_back(a - b);
+                    else {
+                        outputStack.push_back(b);
+                        outputStack.push_back(-a);
+                    }
+                    break;
+                case '*':
+                    outputStack.push_back(a * b);
+                    break;
+                case '/':
+                    outputStack.push_back(a / b);
+                    break;
+                case '^':
+                    outputStack.push_back(pow(a, b));
+                    break;
+            }
+    }
+}
+
+void ShuntingYard::compute(const vector<Token> &input, vector<Token> &operatorStack, vector<double> &outputStack, const Token &token,
+             const bool &isSecondLoop) {
+    switch (token.tokenType) {
+        case Token::INT:
+        case Token::DOUBLE:
+            outputStack.push_back(stod(token.value));
+            break;
+        case Token::OPERATOR:
+            switch (token.operatorType) {
+                case Token::UNARY:
+                    operatorStack.push_back(token);
+                    break;
+                case Token::BINARY:
+                    if (!operatorStack.empty() && operatorStack.back().operatorPriority >= token.operatorPriority &&
+                        operatorStack.back().value != "(") {
+                        while (operatorStack.back().operatorPriority >= token.operatorPriority) {
+                            double a = outputStack.back();
+                            outputStack.pop_back();
+                            double b = outputStack.back();
+                            outputStack.pop_back();
+                            switch (operatorStack.back().value[0]) {
+                                case '+':
+                                    outputStack.push_back(a + b);
+                                    break;
+                                case '-':
+                                    if (operatorStack.back().operatorType == Token::BINARY)
+                                        outputStack.push_back(a - b);
+                                    else {
+                                        outputStack.push_back(b);
+                                        outputStack.push_back(-a);
+                                    }
+                                    break;
+                                case '*':
+                                    outputStack.push_back(a * b);
+                                    break;
+                                case '/':
+                                    outputStack.push_back(a / b);
+                                    break;
+                                case '^':
+                                    outputStack.push_back(pow(a, b));
+                                    break;
+                            }
+                            operatorStack.pop_back();
+                            if (operatorStack.back().value == "(") break;
+                        }
+                    }
+                    if (!isSecondLoop)
+                        operatorStack.push_back(token);
+                    break;
+                case Token::NONE:
+                    break;
+            }
+            break;
+        case Token::L_PARANTHESIS:
+            operatorStack.push_back(token);
+            break;
+        case Token::R_PARANTHESIS:
+            while (operatorStack.back().value != "(") {
+                Token last = operatorStack.back();
+                operatorStack.pop_back();
+                computeForParantheses(outputStack, last);
+            }
+            operatorStack.pop_back();
+            break;
+        case Token::VAR:
+        case Token::FUNC:
+        case Token::SEPARATOR:
+            break;
+    }
 }
