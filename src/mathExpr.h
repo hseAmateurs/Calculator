@@ -19,9 +19,9 @@ public:
         SECONDARY
     };
 
-    MathExpr();
+    MathExpr() = default;
 
-    explicit MathExpr(const std::string &str) : std::string(str) { std::cerr << "Init\n"; };
+    explicit MathExpr(const std::string &str) : std::string(str) { };
 
     std::vector<Token> tokenize(Type type);
 
@@ -32,9 +32,9 @@ private:
 
     void handleSecondaryExpr(std::vector<Token> &tokens);
 
-    bool isOperator(const char& target) const;
+    bool isOperator(const char &target);
 
-    void error(const std::string& msg) const;
+    void error(const std::string &msg) const;
 
     std::vector<Token> tokens;
 
@@ -45,8 +45,6 @@ private:
             {'/', 2},
             {'^', 3}
     };
-
-    std::vector<char> operators;
 };
 
 #endif //CALCULATOR_MATHEXPR_H

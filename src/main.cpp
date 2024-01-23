@@ -8,11 +8,16 @@
 #include "mathExpr.h"
 
 int main() {
-    MathExpr expression("8 - 9 / 2*(sin(x))");
-//    getline(std::cin, expression);
+    setbuf(stdout, 0);
+    MathExpr expression("1+(-2)1");
     std::vector<Token> tokens;
     tokens = expression.tokenize(MathExpr::Type::MAIN);
-    tokens.emplace_back("a", Token::VAR, 4);
+    for (int i = 0; i < tokens.size(); ++i) {
+        std::cout << tokens[i].value << " "
+                  << tokens[i].tokenType << " "
+                  << tokens[i].operatorType << " "
+                  << (int)tokens[i].operatorPriority << std::endl;
+    }
     std::cout << "end\n";
     return 0;
 }

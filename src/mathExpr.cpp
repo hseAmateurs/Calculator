@@ -4,15 +4,8 @@
 
 #include <iostream>
 #include <stdexcept>
-#include <algorithm>
 
 #include "MathExpr.h"
-
-MathExpr::MathExpr() : std::string() {
-    // Переносим ключи из operationPriority в отдельный массив
-    for (const auto &it: operatorPriority)
-        operators.push_back(it.first);
-}
 
 std::vector<Token> MathExpr::tokenize(MathExpr::Type type) {
     // Очищаем предыдущие токены
@@ -36,7 +29,9 @@ char MathExpr::getOperatorPriority(const char &operatorName) const {
 void MathExpr::handleMainExpr() {
     Token::TokenType tokenType;
     std::string buffer;
-    for (const auto &ch: *this) {
+    size_t exprSize = this->size();
+    for (int i = 0; i < exprSize; ++i) {
+        const char ch = (*this)[i];
         if (isspace(ch)) continue;
         // Начинаем считывать новый токен
         if (buffer.empty()) {
@@ -44,10 +39,16 @@ void MathExpr::handleMainExpr() {
                 tokenType = Token::INT;
                 buffer += ch;
             }
+            else if (isalpha(ch)) {
+                tokenType = Token::VAR;
+                buffer += ch;
+            }
             else if (isOperator(ch)) {
-                if (ch == '-') {
+                if(!tokens.empty() && tokens.back().tokenType == Token::R_PARANTHESIS)
+                    tokens.emplace_back(std::string{ch}, Token::OPERATOR, Token::BINARY, getOperatorPriority(ch));
+                else if (ch == '-') {
                     if (tokens.empty() || tokens.back().tokenType == Token::L_PARANTHESIS ||
-                            tokens.back().tokenType == Token::SEPARATOR)
+                        tokens.back().tokenType == Token::SEPARATOR)
                         tokens.emplace_back("-", Token::OPERATOR, Token::UNARY);
                     else
                         error("Вы не поставили скобки перед унарным минусом");
@@ -64,15 +65,18 @@ void MathExpr::handleMainExpr() {
                     tokens.emplace_back("(", Token::L_PARANTHESIS);
                 else error("Отсутсвует оператор между выражениями");
             }
-            else if (isalpha(ch)) {
-                tokenType = Token::VAR;
-                buffer += ch;
-            }
             else if (ch == ')') {
                 if (tokens.empty())
                     error("Выражение не может начинаться с закрывающей скобки");
                 else if (tokens.back().tokenType == Token::L_PARANTHESIS)
                     error("Пустое выражение в скобках");
+            }
+            else if (ch == ',') {
+                if(!tokens.empty() && tokens.back().tokenType == Token::R_PARANTHESIS) {
+                    tokenType = Token::SEPARATOR;
+                    tokens.emplace_back(",", tokenType);
+                }
+                else error("Некорректная постановка заяптой");
             }
             else error("Неизвестный символ");
             continue;
@@ -96,21 +100,14 @@ void MathExpr::handleMainExpr() {
                     tokens.emplace_back(buffer, tokenType, Token::BINARY, getOperatorPriority(ch));
                     buffer.clear();
                 }
-                else if (ch == ',') {
+                else if (ch == ',' || ch == ')') {
                     tokens.emplace_back(buffer, tokenType);
-                    tokenType = Token::SEPARATOR;
+                    tokenType = (ch == ',') ? Token::SEPARATOR : Token::R_PARANTHESIS;
                     buffer = ch;
                     tokens.emplace_back(buffer, tokenType);
                     buffer.clear();
                 }
                 else if (ch == '(') error("Ожидался оператор");
-                else if (ch == ')') {
-                    tokens.emplace_back(buffer, tokenType);
-                    tokenType = Token::R_PARANTHESIS;
-                    buffer = ch;
-                    tokens.emplace_back(buffer, tokenType);
-                    buffer.clear();
-                }
                 else if (isalpha(ch)) error("Переменные/функции не могут начинаться с цифры");
                 else error("Неизвестный символ");
                 break;
@@ -123,9 +120,9 @@ void MathExpr::handleMainExpr() {
                     tokens.emplace_back(buffer, tokenType, Token::BINARY, getOperatorPriority(ch));
                     buffer.clear();
                 }
-                else if (ch == ',') {
+                else if (ch == ',' || ch == ')') {
                     tokens.emplace_back(buffer, tokenType);
-                    tokenType = Token::SEPARATOR;
+                    tokenType = (ch == ',') ? Token::SEPARATOR : Token::R_PARANTHESIS;
                     buffer = ch;
                     tokens.emplace_back(buffer, tokenType);
                     buffer.clear();
@@ -138,21 +135,23 @@ void MathExpr::handleMainExpr() {
                     tokens.emplace_back(buffer, tokenType);
                     buffer.clear();
                 }
-                else if (ch == ')') error("Ожидался оператор/открывающая скобка");
                 else error("Недопустимые символы для именования перменной/функции");
                 break;
             default:
                 std::cerr << "Unexpected way in tokenization";
         }
     }
+    if (!buffer.empty()) tokens.emplace_back(buffer, tokenType);
 }
 
 void MathExpr::handleSecondaryExpr(std::vector<Token> &tokens) {
 
 }
 
-bool MathExpr::isOperator(const char &target) const {
-    return std::find(operators.begin(), operators.end(), target) != operators.end();
+bool MathExpr::isOperator(const char &target) {
+    for (const auto &it: operatorPriority)
+        if (target == it.first) return true;
+    return false;
 }
 
 void MathExpr::error(const std::string &msg) const {
