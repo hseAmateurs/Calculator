@@ -9,22 +9,22 @@
 
 std::vector<Token> MathExpr::tokenize(MathExpr::Type type) {
     // Очищаем предыдущие токены
-    tokens.clear();
     std::cout << *this << "\n";
-    if (type == MAIN) handleDefinition();
-    return tokens;
+    if (type == MAIN) return handleDefinition(*this);
+    else return handleDeclaration(*this);
 }
 
-void MathExpr::handleDefinition() {
-    char nextChar = (*this)[0];
+std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
+    std::vector<Token> tokens;
+    char nextChar = expr[0];
     Token::TokenType tokenType = getCharType(nextChar);
     std::string buffer{nextChar};
 
     Token::TokenType nextToken;
-    size_t exprSize = this->size();
+    size_t exprSize = expr.size();
     // допустимые символы: цифры, буквы, операторы, скобки и запятая
     for (int i = 1; i < exprSize; ++i) {
-        nextChar = (*this)[i];
+        nextChar = expr[i];
         if (isspace(nextChar)) continue;
         nextToken = getCharType(nextChar);
         switch (tokenType) {
@@ -130,12 +130,15 @@ void MathExpr::handleDefinition() {
                     case Token::L_PARANTHESIS:
                         error("Ожидался оператор");
                         break;
+                    default:
+                        error("Синтаксическая ошибка");
                 }
                 break;
             default:
                 std::cerr << "Unexpected way in tokenization";
         }
-        tokenType = nextToken;
+        if(tokenType != Token::DOUBLE)
+            tokenType = nextToken;
     }
     switch (tokenType) {
         case Token::INT:
@@ -147,10 +150,28 @@ void MathExpr::handleDefinition() {
         default:
             error("Синтаксическая ошибка");
     }
+
+    return tokens;
 }
 
-void MathExpr::handleDeclaration() {
+std::vector<Token> MathExpr::handleDeclaration(const std::string &expr) {
+    // Получаем всё до знака =
+    std::string declaration = expr.substr(0, expr.find('='));
+    if(declaration.empty()) error("Не объявлена функция");
+    // Получаем всё после знака =
+    std::string definition = expr.substr(expr.find('=') + 1);
 
+    std::vector<Token> declr_tokens = handleDefinition(declaration);
+    Token::TokenType token = declr_tokens[0].tokenType;
+
+    size_t size = declr_tokens.size();
+    if(size <= 3) error("Ошибка в объявлени функции");
+
+    Token::TokenType nextToken;
+    for (int i = 1; i < size; ++i) {
+        nextToken = declr_tokens[i].tokenType;
+
+    }
 }
 
 void MathExpr::error(const std::string &msg) const {

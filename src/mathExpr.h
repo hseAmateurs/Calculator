@@ -32,15 +32,13 @@ private:
 
     Token::TokenType getCharType(const char &ch) const;
 
-    void handleDefinition();
+    std::vector<Token> handleDefinition(const std::string& expr);
 
-    void handleDeclaration();
+    std::vector<Token> handleDeclaration(const std::string& expr);
 
     bool isOperator(const char &target) const;
 
     void error(const std::string &msg) const;
-
-    std::vector<Token> tokens;
 
     std::map<char, char> operatorPriority = {
             {'-', 1},
