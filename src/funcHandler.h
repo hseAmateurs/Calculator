@@ -21,6 +21,12 @@ public:
 
     void factorizeFunc(const std::vector<Token> &tokens);
 
+    bool isFuncValid(std::string &name, int argsCount) const;
+
+    std::vector<Token> getFunc(std::string &name, std::vector<Token>& args);
+
+    void printUndeclaredFunc() const;
+
 private:
     bool error(const std::string &msg) const;
 
