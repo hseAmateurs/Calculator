@@ -5,6 +5,7 @@
 #include "funcHandler.h"
 
 #include <iostream>
+#include <valarray>
 
 bool FuncHandler::addFunc(std::string &name, const int argsCount, const std::vector<Token> tokens) {
     // Если функция уже занесена в список
@@ -63,7 +64,7 @@ std::vector<Token> FuncHandler::getFunc(std::string &name, std::vector<Token> &a
     size_t argsSize = args.size();
     for (int i = 0; i < argsSize; ++i) {
         for (auto &token: tokens) {
-            if(token.tokenType == Token::ARG && token.operatorPriority == i)
+            if (token.tokenType == Token::ARG && token.operatorPriority == i)
                 token = args[i];
         }
     }
@@ -82,4 +83,108 @@ void FuncHandler::printUndeclaredFunc() const {
         else std::cout << ", " << el.first;
     }
     std::cout << std::endl;
+}
+
+Token FuncHandler::calculate(const Token &operToken, const Token &aToken, const Token &bToken) const {
+    double ans;
+    double a = std::stod(aToken.value);
+    double b = std::stod(bToken.value);
+
+    if(operToken.tokenType == Token::OPERATOR)
+        ans = arithmeticCalc(operToken.value[0], a, b);
+    else
+        ans = funcCalc(operToken.value, a, b);
+
+    Token res;
+    if (aToken.tokenType == Token::DOUBLE || bToken.tokenType == Token::DOUBLE) {
+        res.tokenType = Token::DOUBLE;
+        res.value = std::to_string(ans);
+    }
+    else {
+        res.tokenType = Token::INT;
+        res.value = std::to_string((int)ans);
+    }
+    return res;
+}
+
+double FuncHandler::arithmeticCalc(const char oper, const double &a, const double &b) const {
+    double res;
+    switch (oper) {
+        case '+':
+            res = a + b;
+            break;
+        case '-':
+            res = a - b;
+            break;
+        case '*':
+            res = a * b;
+            break;
+        case '/':
+            res = a / b;
+            break;
+        case '^':
+            res = pow(a, b);
+            break;
+        default:
+            error("Неизвестный оператор");
+    }
+    return res;
+}
+
+double FuncHandler::funcCalc(std::string funcName, const double &a, const double &b) const {
+    toLower(funcName);
+
+    double res;
+    if(funcName == "abs") {
+
+    }
+    else if(funcName == "sqrt") {
+
+    }
+    else if(funcName == "ln") {
+
+    }
+    else if(funcName == "lg") {
+
+    }
+    else if(funcName == "log2") {
+
+    }
+    else if(funcName == "sign") {
+
+    }
+    else if(funcName == "exp") {
+
+    }
+    else if(funcName == "sin") {
+
+    }
+    else if(funcName == "cos") {
+
+    }
+    else if(funcName == "tn") {
+
+    }
+    else if(funcName == "ctg") {
+
+    }
+    else if(funcName == "arcsin") {
+
+    }
+    else if(funcName == "arccos") {
+
+    }
+    else if(funcName == "arctg") {
+
+    }
+    else if(funcName == "arcctg") {
+
+    }
+    else error("Неизвестная функция");
+    return res;
+}
+
+void FuncHandler::toLower(std::string& str) const {
+    for (char& c : str)
+        c = std::tolower(c);
 }

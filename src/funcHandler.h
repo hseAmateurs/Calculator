@@ -23,11 +23,19 @@ public:
 
     bool isFuncValid(std::string &name, int argsCount) const;
 
-    std::vector<Token> getFunc(std::string &name, std::vector<Token>& args);
+    std::vector<Token> getFunc(std::string &name, std::vector<Token> &args);
 
     void printUndeclaredFunc() const;
 
+    Token calculate(const Token &operToken, const Token &aToken, const Token &bToken) const;
+
 private:
+    double arithmeticCalc(char oper, const double &a, const double &b) const;
+
+    double funcCalc(std::string funcName, const double &a, const double &b) const;
+
+    void toLower(std::string& str) const;
+
     bool error(const std::string &msg) const;
 
     std::map<std::string, std::pair<int, std::vector<Token>>> functions;
