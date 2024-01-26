@@ -7,11 +7,10 @@
 
 #include "MathExpr.h"
 
-void MathExpr::tokenize(MathExpr::Type type, std::vector<Token> &tokens) {
-    // Очищаем предыдущие токены
-    std::cout << *this << "\n";
-    if (type == MAIN) tokens = handleDefinition(*this);
+std::vector<Token> MathExpr::tokenize(MathExpr::Type type) {
+    if (type == MAIN) return handleDefinition(*this);
     else handleDeclaration(*this);
+    return {};
 }
 
 std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
