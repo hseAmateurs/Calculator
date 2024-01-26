@@ -19,7 +19,8 @@ public:
         L_PARANTHESIS,
         R_PARANTHESIS,
         VAR,
-        FUNC
+        FUNC,
+        ARG
     };
 
     enum OperatorType {
