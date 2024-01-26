@@ -10,7 +10,7 @@
 
 int countEqualSign(const MathExpr &expr) {
     int count = 0;
-    for (const auto &ch : expr)
+    for (const auto &ch: expr)
         if (ch == '=') count++;
     return count;
 }
@@ -25,13 +25,21 @@ int main() {
     MathExpr expression;
     bool isMain = false;
     std::vector<Token> tokens;
-    while(!isMain || !funcHandler.isFiled()) {
+
+    std::string funcName;
+    int argsCount;
+    std::vector<Token> funcTokens;
+    while (!isMain || !funcHandler.isFiled()) {
         getline(std::cin, expression);
+        if (expression.empty()) {
+            if (!isMain)
+                std::cout << "Вы не ввели основное выражение\n";
+            else
+                funcHandler.printUndeclaredFunc();
+            continue;
+        }
         int countEqual = countEqualSign(expression);
         if (countEqual == 1) {
-            std::string funcName;
-            int argsCount;
-            std::vector<Token> funcTokens;
             std::tie(funcTokens, funcName, argsCount) = expression.tokenize(MathExpr::SECONDARY);
             funcHandler.factorizeFunc(funcTokens);
             funcHandler.addFunc(funcName, argsCount, funcTokens);
