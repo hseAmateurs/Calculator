@@ -31,15 +31,15 @@ public:
 
     std::string value;
     TokenType tokenType;
-    OperatorType operatorType;
     char operatorPriority;
+    OperatorType operatorType;
 
-    Token(std::string value, TokenType tokenType, OperatorType operatorType = OperatorType::NONE,
-          char operatorPriority = -1)
-            : value(std::move(value)),
-              tokenType(tokenType),
-              operatorType(operatorType),
-              operatorPriority(operatorPriority) { };
+    Token(std::string value, TokenType tokenType, char operatorPriority = -1,
+          OperatorType operatorType = OperatorType::NONE) :
+            value(std::move(value)),
+            tokenType(tokenType),
+            operatorType(operatorType),
+            operatorPriority(operatorPriority) { };
 };
 
 #endif //CALCULATOR_TOKEN_H
