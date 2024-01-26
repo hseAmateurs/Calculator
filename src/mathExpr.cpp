@@ -7,17 +7,18 @@
 
 #include "MathExpr.h"
 
-std::vector<Token> MathExpr::tokenize(MathExpr::Type type) {
-    if (type == MAIN) return handleDefinition(*this);
-    else handleDeclaration(*this);
-    return {};
+std::tuple<std::vector<Token>, std::string, int> MathExpr::tokenize(MathExpr::Type type) {
+    if (type == MAIN)
+        return std::make_tuple(handleDefinition(*this), "", 0);
+    else
+        return handleDeclaration(*this);
 }
 
 std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
     std::vector<Token> tokens;
     int i = 0;
     //Пропуск пробелов в начале строки
-    while(isspace(expr[i++]));
+    while (isspace(expr[i++]));
     char nextChar = expr[i - 1];
     Token::TokenType tokenType = getCharType(nextChar);
     std::string buffer{nextChar};
@@ -139,8 +140,11 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
             default:
                 std::cerr << "Unexpected way in tokenization";
         }
-        if (tokenType != Token::DOUBLE)
-            tokenType = nextToken;
+        // Пропускаем эти ситуации, т.к. они кардинально меняют тип токена
+        if (tokenType == Token::DOUBLE ||
+            (tokenType == Token::VAR && nextToken == Token::INT))
+            continue;
+        tokenType = nextToken;
     }
     switch (tokenType) {
         case Token::INT:
@@ -156,7 +160,7 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
     return tokens;
 }
 
-void MathExpr::handleDeclaration(const std::string &expr) {
+std::tuple<std::vector<Token>, std::string, int> MathExpr::handleDeclaration(const std::string &expr) {
     // Получаем всё до знака =
     std::string declaration = expr.substr(0, expr.find('='));
     if (declaration.empty()) error("Не объявлена функция");
@@ -164,9 +168,12 @@ void MathExpr::handleDeclaration(const std::string &expr) {
     std::string definition = expr.substr(expr.find('=') + 1);
 
     std::vector<Token> declrTokens = handleDefinition(declaration);
-    if (!isDeclarationValid(declrTokens)) return;
+    if (!isDeclarationValid(declrTokens)) return {};
 
     std::vector<Token> defTokens = handleDefinition(definition);
+    if (declrTokens.size() == 1)
+        return std::make_tuple(defTokens, declrTokens[0].value, 0);
+
     char argPriority = 0;
     for (const auto &arg: declrTokens) {
         if (arg.tokenType != Token::VAR) continue;
@@ -177,14 +184,19 @@ void MathExpr::handleDeclaration(const std::string &expr) {
         }
         argPriority++;
     }
-    //return defTokens;
+    return std::make_tuple(defTokens, declrTokens[0].value, argPriority);
 }
 
 bool MathExpr::isDeclarationValid(const std::vector<Token> &tokens) const {
     Token::TokenType tokenType = tokens[0].tokenType;
     size_t size = tokens.size();
-    if (size <= 3 || tokenType != Token::FUNC)
-        return error("Синтаксическая ошибка в объявлении фукнции");
+
+    bool isFunc = (size >= 3 && tokenType == Token::FUNC);
+    bool isVar = (size == 1 && tokenType == Token::VAR);
+    if (isVar)
+        return true;
+    else if (!isFunc)
+        return error("Синтаксическая ошибка в объявлении фукнции/переменной");
 
     Token::TokenType nextToken;
     for (int i = 1; i < size; ++i) {

@@ -23,7 +23,7 @@ public:
 
     explicit MathExpr(const std::string &str) : std::string(str) { };
 
-    std::vector<Token> tokenize(Type type);
+    std::tuple<std::vector<Token>, std::string, int> tokenize(Type type);
 
 
 private:
@@ -34,7 +34,7 @@ private:
 
     std::vector<Token> handleDefinition(const std::string &expr);
 
-    void handleDeclaration(const std::string &expr);
+    std::tuple<std::vector<Token>, std::string, int> handleDeclaration(const std::string &expr);
 
     bool isDeclarationValid(const std::vector<Token> &tokens) const;
 
