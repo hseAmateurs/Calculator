@@ -23,7 +23,7 @@ public:
 
     explicit MathExpr(const std::string &str) : std::string(str) { };
 
-    std::vector<Token> tokenize(Type type);
+    void tokenize(Type type, std::vector<Token> &tokens);
 
 
 private:
