@@ -21,26 +21,30 @@ public:
 
     void factorizeFunc(const std::vector<Token> &tokens);
 
-    bool isFuncValid(std::string &name, int argsCount) const;
+    int getArgsCount(std::string &name) const;
 
-    std::vector<Token> getFunc(std::string &name, std::vector<Token> &args);
+    bool isBuiltInFunc(const std::string &name) const;
+
+    std::vector<Token> getFunc(const std::string &name, const std::vector<Token> &args);
 
     void printUndeclaredFunc() const;
 
     Token calculate(const Token &operToken, const Token &aToken, const Token &bToken) const;
 
 private:
-    double arithmeticCalc(char oper, const double &a, const double &b) const;
+    double funcCalc(const std::string &funcName, double x) const;
 
-    double funcCalc(std::string funcName, const double &a, const double &b) const;
-
-    void toLower(std::string& str) const;
+    std::string toLower(const std::string &str) const;
 
     bool error(const std::string &msg) const;
 
     std::map<std::string, std::pair<int, std::vector<Token>>> functions;
 
     int emptyRows = 0;
+
+    std::vector<std::string> builtInFunctions = {"pi", "e",
+                                                 "abs", "sqrt", "ln", "lg", "log2", "sign", "exp",
+                                                 "sin", "cos", "tg", "ctg", "arcsin", "arccos", "arctg", "arcctg"};
 };
 
 

@@ -6,10 +6,18 @@
 
 #include <iostream>
 #include <valarray>
+#include <math.h>
 
 bool FuncHandler::addFunc(std::string &name, const int argsCount, const std::vector<Token> tokens) {
     // Если функция уже занесена в список
     std::cout << "addFunc: " << name << " " << argsCount << " " << tokens.size() << "\n";
+    if (isBuiltInFunc(name)) {
+        if (tokens.empty()) {
+            emptyRows--;
+            return true;
+        }
+        else return error("Вы не можете переобъявить встроенные функции/константы");
+    }
     if (functions.find(name) != functions.end()) {
         emptyRows--;
         // Скипаем т.к. пустая фукнция уже есть в словаре
@@ -50,16 +58,24 @@ void FuncHandler::factorizeFunc(const std::vector<Token> &tokens) {
     }
 }
 
-bool FuncHandler::isFuncValid(std::string &name, int argsCount) const {
-    if (functions.find(name) == functions.end())
-        return error("Функция не объявлена");
-    return (functions.at(name).first == argsCount);
+int FuncHandler::getArgsCount(std::string &name) const {
+    if (functions.find(name) == functions.end()) {
+        error("Функция не объявлена");
+        return -1;
+    }
+    return functions.at(name).first;
 }
 
-std::vector<Token> FuncHandler::getFunc(std::string &name, std::vector<Token> &args) {
+std::vector<Token> FuncHandler::getFunc(const std::string &name, const std::vector<Token> &args) {
+    std::vector<Token> tokens;
+    if (isBuiltInFunc(name)) {
+        double value = (args.empty()) ? 0.0 : std::stod(args[0].value);
+        tokens.emplace_back(std::to_string(funcCalc(toLower(name), value)), Token::DOUBLE);
+        return tokens;
+    }
     if (functions.find(name) == functions.end())
         error("Функция не объявлена");
-    std::vector<Token> tokens = functions.at(name).second;
+    tokens = functions.at(name).second;
 
     size_t argsSize = args.size();
     for (int i = 0; i < argsSize; ++i) {
@@ -90,10 +106,25 @@ Token FuncHandler::calculate(const Token &operToken, const Token &aToken, const 
     double a = std::stod(aToken.value);
     double b = std::stod(bToken.value);
 
-    if(operToken.tokenType == Token::OPERATOR)
-        ans = arithmeticCalc(operToken.value[0], a, b);
-    else
-        ans = funcCalc(operToken.value, a, b);
+    switch (operToken.value[0]) {
+        case '+':
+            ans = a + b;
+            break;
+        case '-':
+            ans = a - b;
+            break;
+        case '*':
+            ans = a * b;
+            break;
+        case '/':
+            ans = a / b;
+            break;
+        case '^':
+            ans = pow(a, b);
+            break;
+        default:
+            error("Неизвестный оператор");
+    }
 
     Token res;
     if (aToken.tokenType == Token::DOUBLE || bToken.tokenType == Token::DOUBLE) {
@@ -107,84 +138,72 @@ Token FuncHandler::calculate(const Token &operToken, const Token &aToken, const 
     return res;
 }
 
-double FuncHandler::arithmeticCalc(const char oper, const double &a, const double &b) const {
-    double res;
-    switch (oper) {
-        case '+':
-            res = a + b;
-            break;
-        case '-':
-            res = a - b;
-            break;
-        case '*':
-            res = a * b;
-            break;
-        case '/':
-            res = a / b;
-            break;
-        case '^':
-            res = pow(a, b);
-            break;
-        default:
-            error("Неизвестный оператор");
+double FuncHandler::funcCalc(const std::string &name, const double x) const {
+    double res = 0;
+    if(name == "pi") {
+        res = M_PI;
     }
-    return res;
-}
-
-double FuncHandler::funcCalc(std::string funcName, const double &a, const double &b) const {
-    toLower(funcName);
-
-    double res;
-    if(funcName == "abs") {
-
+    else if(name == "e") {
+        res = std::exp(1.0);
     }
-    else if(funcName == "sqrt") {
-
+    else if (name == "abs") {
+        res = std::abs(x);
     }
-    else if(funcName == "ln") {
-
+    else if (name == "sqrt") {
+        res = std::sqrt(x);
     }
-    else if(funcName == "lg") {
-
+    else if (name == "ln") {
+        res = std::log(x);
     }
-    else if(funcName == "log2") {
-
+    else if (name == "lg") {
+        res = std::log10(x);
     }
-    else if(funcName == "sign") {
-
+    else if (name == "log2") {
+        res = std::log2(x);
     }
-    else if(funcName == "exp") {
-
+    else if (name == "sign") {
+        if(x > 0) res = 1;
+        else if(x < 0) res = -1;
+        else res = 0;
     }
-    else if(funcName == "sin") {
-
+    else if (name == "exp") {
+        res = std::exp(x);
     }
-    else if(funcName == "cos") {
-
+    else if (name == "sin") {
+        res = std::sin(x);
     }
-    else if(funcName == "tn") {
-
+    else if (name == "cos") {
+        res = std::cos(x);
     }
-    else if(funcName == "ctg") {
-
+    else if (name == "tg") {
+        res = std::tan(x);
     }
-    else if(funcName == "arcsin") {
-
+    else if (name == "ctg") {
+        res = 1 / std::tan(x);
     }
-    else if(funcName == "arccos") {
-
+    else if (name == "arcsin") {
+        res = std::asin(x);
     }
-    else if(funcName == "arctg") {
-
+    else if (name == "arccos") {
+        res = std::acos(x);
     }
-    else if(funcName == "arcctg") {
-
+    else if (name == "arctg") {
+        res = std::atan(x);
+    }
+    else if (name == "arcctg") {
+        res = M_PI/2 - std::atan(x);
     }
     else error("Неизвестная функция");
     return res;
 }
 
-void FuncHandler::toLower(std::string& str) const {
-    for (char& c : str)
-        c = std::tolower(c);
+std::string FuncHandler::toLower(const std::string &str) const {
+    std::string res;
+    for (const char &c: str)
+        res += std::tolower(c);
+    return res;
+}
+
+bool FuncHandler::isBuiltInFunc(const std::string &name) const {
+    return std::find(builtInFunctions.begin(), builtInFunctions.end(), toLower(name)) != builtInFunctions.end();
 }
