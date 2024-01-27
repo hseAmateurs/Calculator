@@ -35,7 +35,7 @@ public:
     // Если фукнция — встроенная, то вернёт её значение
     std::vector<Token> getFunc(const std::string &name, const std::vector<Token> &args);
 
-    // Вывод необъявленных фукнций
+    // Вывод необъявленных функций
     void printUndeclaredFunc() const;
 
     // Вычисления арифметических действий

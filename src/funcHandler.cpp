@@ -35,6 +35,7 @@ bool FuncHandler::addFunc(std::string &name, const int argsCount, const std::vec
     for (const auto &el: functions) {
         std::cout << el.first << " " << el.second.first << " " << el.second.second.size() << "\n";
     }
+    std::cout << std::endl;
     return true;
 }
 
@@ -200,6 +201,8 @@ double FuncHandler::funcCalc(const std::string &name, const double x) const {
         res = M_PI/2 - std::atan(x);
     }
     else error("Неизвестная функция");
+    if(std::isnan(res))
+        error("Вы не учли область определения функции");
     return res;
 }
 
