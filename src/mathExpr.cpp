@@ -146,6 +146,7 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
             continue;
         tokenType = nextToken;
     }
+    // Обработка последнего токена
     switch (tokenType) {
         case Token::INT:
         case Token::DOUBLE:
@@ -171,9 +172,11 @@ std::tuple<std::vector<Token>, std::string, int> MathExpr::handleDeclaration(con
     if (!isDeclarationValid(declrTokens)) return {};
 
     std::vector<Token> defTokens = handleDefinition(definition);
+    // Выражение — переменная
     if (declrTokens.size() == 1)
         return std::make_tuple(defTokens, declrTokens[0].value, 0);
 
+    // Замена аргументов в правой части на соотвествующие токены
     char argPriority = 0;
     for (const auto &arg: declrTokens) {
         if (arg.tokenType != Token::VAR) continue;

@@ -32,8 +32,10 @@ private:
 
     Token::TokenType getCharType(const char &ch) const;
 
+    // Обработка части после знака =
     std::vector<Token> handleDefinition(const std::string &expr);
 
+    // Обработка части до знака =
     std::tuple<std::vector<Token>, std::string, int> handleDeclaration(const std::string &expr);
 
     bool isDeclarationValid(const std::vector<Token> &tokens) const;

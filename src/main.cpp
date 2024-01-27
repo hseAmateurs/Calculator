@@ -8,6 +8,7 @@
 #include "mathExpr.h"
 #include "funcHandler.h"
 
+// Подсчёт кол-ва знаков =
 int countEqualSign(const MathExpr &expr) {
     int count = 0;
     for (const auto &ch: expr)
@@ -21,14 +22,21 @@ f(tr(1, 2), 1) + a + y1
  */
 int main() {
     setbuf(stdout, 0);
+    // Класс обработки функций
     FuncHandler funcHandler;
+
+    // Класс токенизации выражений
     MathExpr expression;
+
+    // Флаг, отслеживающий, введено ли было главное выражение
     bool isMain = false;
     std::vector<Token> tokens;
 
+    // Параметры вторичного выражения
     std::string funcName;
     int argsCount;
     std::vector<Token> funcTokens;
+    // Цикл работает, пока таблица функций не будет полностью объявлена
     while (!isMain || !funcHandler.isFiled()) {
         getline(std::cin, expression);
         if (expression.empty()) {
@@ -41,6 +49,7 @@ int main() {
         int countEqual = countEqualSign(expression);
         if (countEqual == 1) {
             std::tie(funcTokens, funcName, argsCount) = expression.tokenize(MathExpr::SECONDARY);
+            // Факторизация необходима для отслеживания, необъявленных функций
             funcHandler.factorizeFunc(funcTokens);
             funcHandler.addFunc(funcName, argsCount, funcTokens);
         }

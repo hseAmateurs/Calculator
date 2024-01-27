@@ -9,7 +9,7 @@
 #include <math.h>
 
 bool FuncHandler::addFunc(std::string &name, const int argsCount, const std::vector<Token> tokens) {
-    // Если функция уже занесена в список
+    // Дебаг информация
     std::cout << "addFunc: " << name << " " << argsCount << " " << tokens.size() << "\n";
     if (isBuiltInFunc(name)) {
         if (tokens.empty()) {
@@ -18,9 +18,10 @@ bool FuncHandler::addFunc(std::string &name, const int argsCount, const std::vec
         }
         else return error("Вы не можете переобъявить встроенные функции/константы");
     }
+    // Если функция уже занесена в список
     if (functions.find(name) != functions.end()) {
         emptyRows--;
-        // Скипаем т.к. пустая фукнция уже есть в словаре
+        // Скипаем т.к. пустая фукнция уже есть в таблицеы
         if (tokens.empty()) return true;
         // И она объявлена
         if (!functions.at(name).second.empty()) {
@@ -29,6 +30,7 @@ bool FuncHandler::addFunc(std::string &name, const int argsCount, const std::vec
         }
     }
     functions[std::move(name)] = std::make_pair(argsCount, tokens);
+    // Дебаг информация
     std::cout << "Current map: " << emptyRows << "\n";
     for (const auto &el: functions) {
         std::cout << el.first << " " << el.second.first << " " << el.second.second.size() << "\n";
@@ -53,6 +55,7 @@ bool FuncHandler::isFiled() const {
 
 void FuncHandler::factorizeFunc(const std::vector<Token> &tokens) {
     for (const auto &token: tokens) {
+        // Если встречаем FUNC/VAR, то вносим в таблицу
         if (token.tokenType != Token::VAR && token.tokenType != Token::FUNC) continue;
         addFunc(token.value);
     }
@@ -68,6 +71,7 @@ int FuncHandler::getArgsCount(std::string &name) const {
 
 std::vector<Token> FuncHandler::getFunc(const std::string &name, const std::vector<Token> &args) {
     std::vector<Token> tokens;
+    // Вычисление значения, если это встроенная фукнция
     if (isBuiltInFunc(name)) {
         double value = (args.empty()) ? 0.0 : std::stod(args[0].value);
         tokens.emplace_back(std::to_string(funcCalc(toLower(name), value)), Token::DOUBLE);
@@ -78,6 +82,7 @@ std::vector<Token> FuncHandler::getFunc(const std::string &name, const std::vect
     tokens = functions.at(name).second;
 
     size_t argsSize = args.size();
+    // Замена аргументов в массиве токенов на соответствующие значения
     for (int i = 0; i < argsSize; ++i) {
         for (auto &token: tokens) {
             if (token.tokenType == Token::ARG && token.operatorPriority == i)
@@ -127,6 +132,7 @@ Token FuncHandler::calculate(const Token &operToken, const Token &aToken, const 
     }
 
     Token res;
+    // Если хотя бы один из токенов == DOUBLE, то результат тоже будет == DOUBLE
     if (aToken.tokenType == Token::DOUBLE || bToken.tokenType == Token::DOUBLE) {
         res.tokenType = Token::DOUBLE;
         res.value = std::to_string(ans);
