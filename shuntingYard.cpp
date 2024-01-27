@@ -62,6 +62,8 @@ void ShuntingYard::computeForParantheses(vector<double> &outputStack, const Toke
 
 void ShuntingYard::compute(const vector<Token> &input, vector<Token> &operatorStack, vector<double> &outputStack, const Token &token,
                            const bool &isSecondLoop) {
+    double* buffer = new double[100];
+    int bufferTop = 0;
     switch (token.tokenType) {
         case Token::INT:
         case Token::DOUBLE:
@@ -106,6 +108,12 @@ void ShuntingYard::compute(const vector<Token> &input, vector<Token> &operatorSt
                             if (operatorStack.back().value == "(") break;
                         }
                     }
+                    if (operatorStack.back().value == "("){
+                        operatorStack.pop_back();
+                        if (operatorStack.back().tokenType == Token::FUNC){
+
+                        }
+                    }
                     if (!isSecondLoop)
                         operatorStack.push_back(token);
                     break;
@@ -125,8 +133,20 @@ void ShuntingYard::compute(const vector<Token> &input, vector<Token> &operatorSt
             operatorStack.pop_back();
             break;
         case Token::VAR:
+            //sumUp for var
         case Token::FUNC:
+            bufferTop = 0;
+            operatorStack.push_back(token);
+            //представить функцию токенами
+            //sumUp
         case Token::SEPARATOR:
+            while (operatorStack.back().value != "(") {
+                Token last = operatorStack.back();
+                operatorStack.pop_back();
+                computeForParantheses(outputStack, last);
+            }
+            buffer[bufferTop] = outputStack.back();
+            outputStack.pop_back();
             break;
     }
 }
