@@ -114,8 +114,8 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
                     exit(-1);
                 }
                 vector<Token> args;
-                for (const auto &val: buffer)
-                    args.emplace_back(to_string(val.back()), Token::DOUBLE);
+                for (const auto &val: buffer.back())
+                    args.emplace_back(to_string(val), Token::DOUBLE);
                 args = funcHandler.getFunc(operatorStack.back().value, args);
                 if (isFunction){
                     buffer.pop_back();
@@ -139,7 +139,7 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
             while (operatorStack.back().tokenType != Token::L_PARANTHESIS && operatorStack.back().tokenType != Token::SEPARATOR) {
                 Token last = operatorStack.back();
                 operatorStack.pop_back();
-                computeOnce(isFunction ? buffer.back() : outputStack, token);
+                computeOnce(isFunction ? buffer.back() : outputStack, last);
             }
             operatorStack.push_back(token);
             break;
