@@ -5,6 +5,7 @@
 #include "token.h"
 #include "shuntingYard.h"
 #include "funcHandler.h"
+
 using namespace std;
 
 double ShuntingYard::sumUp(const vector<Token> &input) {
@@ -13,7 +14,7 @@ double ShuntingYard::sumUp(const vector<Token> &input) {
     vector<vector<double>> buffer;
     bool isFunction = false;
     int funcCount = 0;
-    Token token = Token("0", Token::INT);
+    Token token;
     int i = 0;
     bool isSecondLoop = false;
     for (;;) {
@@ -21,10 +22,8 @@ double ShuntingYard::sumUp(const vector<Token> &input) {
             token = input[i];
         else {
             isSecondLoop = true;
-            if (!operatorStack.empty())
-                token = operatorStack.back();
-            else
-                break;
+            if (operatorStack.empty()) break;
+            token = operatorStack.back();
         }
         compute(buffer, operatorStack, outputStack, token, isSecondLoop, isFunction, funcCount);
         i++;
@@ -33,24 +32,22 @@ double ShuntingYard::sumUp(const vector<Token> &input) {
 }
 
 void ShuntingYard::computeOnce(vector<double> &outputStack, const Token &token) {
+    double a = outputStack.back();
+    outputStack.pop_back();
+    double b = outputStack.back();
+    outputStack.pop_back();
     switch (token.operatorType) {
         case Token::UNARY:
+            outputStack.push_back(b);
+            outputStack.push_back(-a);
+            break;
         case Token::BINARY:
-            double a = outputStack.back();
-            outputStack.pop_back();
-            double b = outputStack.back();
-            outputStack.pop_back();
             switch (token.value[0]) {
                 case '+':
                     outputStack.push_back(a + b);
                     break;
                 case '-':
-                    if (token.operatorType == Token::BINARY)
-                        outputStack.push_back(b - a);
-                    else {
-                        outputStack.push_back(b);
-                        outputStack.push_back(-a);
-                    }
+                    outputStack.push_back(b - a);
                     break;
                 case '*':
                     outputStack.push_back(a * b);
@@ -61,18 +58,24 @@ void ShuntingYard::computeOnce(vector<double> &outputStack, const Token &token) 
                 case '^':
                     outputStack.push_back(pow(b, a));
                     break;
+                default:
+                    error("Неизвестный оператор");
             }
+        default:
+            error("Неизвестный тип оператора");
     }
 }
 
-void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operatorStack, vector<double> &outputStack, const Token &token,
+void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operatorStack, vector<double> &outputStack,
+                           const Token &token,
                            const bool &isSecondLoop, bool &isFunction, int &funcCount) {
     switch (token.tokenType) {
         case Token::INT:
         case Token::DOUBLE:
-            isFunction ?
-            buffer.back().push_back(stod(token.value)) :
-            outputStack.push_back(stod(token.value));
+            if (isFunction)
+                buffer.back().push_back(stod(token.value));
+            else
+                outputStack.push_back(stod(token.value));
             break;
         case Token::OPERATOR:
             switch (token.operatorType) {
@@ -82,7 +85,8 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
                 case Token::BINARY:
                     if (!operatorStack.empty() && operatorStack.back().operatorPriority >= token.operatorPriority &&
                         operatorStack.back().value != "(") {
-                        while (operatorStack.back().operatorPriority >= token.operatorPriority) {
+                        while (!operatorStack.empty() &&
+                               operatorStack.back().operatorPriority >= token.operatorPriority) {
                             computeOnce(isFunction ? buffer.back() : outputStack, token);
                             operatorStack.pop_back();
                         }
@@ -90,7 +94,7 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
                     if (!isSecondLoop)
                         operatorStack.push_back(token);
                     break;
-                case Token::NONE:
+                default:
                     break;
             }
             break;
@@ -108,21 +112,18 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
             if (operatorStack.back().tokenType == Token::FUNC) {
                 if (funcCount == 0) isFunction = false;
                 else funcCount--;
-                int argsCount = funcHandler.getArgsCount(operatorStack.back().value);
-                if (argsCount != buffer.back().size()) {
-                    std::cerr << "Wrong arg count";
-                    exit(-1);
-                }
+
                 vector<Token> args;
                 for (const auto &val: buffer.back())
                     args.emplace_back(to_string(val), Token::DOUBLE);
                 args = funcHandler.getFunc(operatorStack.back().value, args);
-                if (isFunction){
+                if (isFunction) {
                     buffer.pop_back();
                     buffer.back().push_back(sumUp(args));
-                } else {
-                    outputStack.push_back(sumUp(args));
                 }
+                else
+                    outputStack.push_back(sumUp(args));
+
                 operatorStack.pop_back();
             }
             break;
@@ -136,14 +137,21 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
             operatorStack.push_back(token);
             break;
         case Token::SEPARATOR:
-            while (operatorStack.back().tokenType != Token::L_PARANTHESIS && operatorStack.back().tokenType != Token::SEPARATOR) {
+            while (operatorStack.back().tokenType != Token::L_PARANTHESIS &&
+                   operatorStack.back().tokenType != Token::SEPARATOR) {
                 Token last = operatorStack.back();
                 operatorStack.pop_back();
                 computeOnce(isFunction ? buffer.back() : outputStack, last);
             }
             operatorStack.push_back(token);
             break;
-        case Token::NONE:
+        default:
             break;
     }
+}
+
+bool FuncHandler::error(const std::string &msg) const {
+    std::cerr << msg << std::endl;
+    exit(-1);
+    return false;
 }

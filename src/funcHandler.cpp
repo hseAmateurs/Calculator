@@ -62,7 +62,12 @@ void FuncHandler::factorizeFunc(const std::vector<Token> &tokens) {
     }
 }
 
-int FuncHandler::getArgsCount(std::string &name) const {
+int FuncHandler::getArgsCount(const std::string &name) const {
+    if (isBuiltInFunc(name)) {
+        std::string lowerName = toLower(name);
+        if (lowerName == "e" || lowerName == "pi") return 0;
+        else return 1;
+    }
     if (functions.find(name) == functions.end()) {
         error("Функция не объявлена");
         return -1;
@@ -71,6 +76,12 @@ int FuncHandler::getArgsCount(std::string &name) const {
 }
 
 std::vector<Token> FuncHandler::getFunc(const std::string &name, const std::vector<Token> &args) {
+    size_t argsSize = args.size();
+
+    // Проверка количества подаваемых аргументов с необходимым
+    if(argsSize != getArgsCount(name))
+        error("Некорректное количество аргументов функции");
+
     std::vector<Token> tokens;
     // Вычисление значения, если это встроенная фукнция
     if (isBuiltInFunc(name)) {
@@ -78,11 +89,9 @@ std::vector<Token> FuncHandler::getFunc(const std::string &name, const std::vect
         tokens.emplace_back(std::to_string(funcCalc(toLower(name), value)), Token::DOUBLE);
         return tokens;
     }
-    if (functions.find(name) == functions.end())
-        error("Функция не объявлена");
+    // Проверка на наличие фукнции в таблице проверяется в getArgsCount
     tokens = functions.at(name).second;
 
-    size_t argsSize = args.size();
     // Замена аргументов в массиве токенов на соответствующие значения
     for (int i = 0; i < argsSize; ++i) {
         for (auto &token: tokens) {
@@ -107,50 +116,12 @@ void FuncHandler::printUndeclaredFunc() const {
     std::cout << std::endl;
 }
 
-Token FuncHandler::calculate(const Token &operToken, const Token &aToken, const Token &bToken) const {
-    double ans;
-    double a = std::stod(aToken.value);
-    double b = std::stod(bToken.value);
-
-    switch (operToken.value[0]) {
-        case '+':
-            ans = a + b;
-            break;
-        case '-':
-            ans = a - b;
-            break;
-        case '*':
-            ans = a * b;
-            break;
-        case '/':
-            ans = a / b;
-            break;
-        case '^':
-            ans = pow(a, b);
-            break;
-        default:
-            error("Неизвестный оператор");
-    }
-
-    Token res;
-    // Если хотя бы один из токенов == DOUBLE, то результат тоже будет == DOUBLE
-    if (aToken.tokenType == Token::DOUBLE || bToken.tokenType == Token::DOUBLE) {
-        res.tokenType = Token::DOUBLE;
-        res.value = std::to_string(ans);
-    }
-    else {
-        res.tokenType = Token::INT;
-        res.value = std::to_string((int)ans);
-    }
-    return res;
-}
-
 double FuncHandler::funcCalc(const std::string &name, const double x) const {
     double res = 0;
-    if(name == "pi") {
+    if (name == "pi") {
         res = M_PI;
     }
-    else if(name == "e") {
+    else if (name == "e") {
         res = std::exp(1.0);
     }
     else if (name == "abs") {
@@ -169,8 +140,8 @@ double FuncHandler::funcCalc(const std::string &name, const double x) const {
         res = std::log2(x);
     }
     else if (name == "sign") {
-        if(x > 0) res = 1;
-        else if(x < 0) res = -1;
+        if (x > 0) res = 1;
+        else if (x < 0) res = -1;
         else res = 0;
     }
     else if (name == "exp") {
@@ -198,10 +169,10 @@ double FuncHandler::funcCalc(const std::string &name, const double x) const {
         res = std::atan(x);
     }
     else if (name == "arcctg") {
-        res = M_PI/2 - std::atan(x);
+        res = M_PI / 2 - std::atan(x);
     }
     else error("Неизвестная функция");
-    if(std::isnan(res))
+    if (std::isnan(res))
         error("Вы не учли область определения функции");
     return res;
 }

@@ -25,10 +25,6 @@ public:
     // Вычленение используемых фукнций и запись их в таблицу
     void factorizeFunc(const std::vector<Token> &tokens);
 
-    // Возвращает кол-во аргументов фукнции
-    // Если это перменная, то кол-во = 0
-    int getArgsCount(std::string &name) const;
-
     bool isBuiltInFunc(const std::string &name) const;
 
     // Возвращает токены пользовательской фукнции
@@ -38,10 +34,11 @@ public:
     // Вывод необъявленных функций
     void printUndeclaredFunc() const;
 
-    // Вычисления арифметических действий
-    Token calculate(const Token &operToken, const Token &aToken, const Token &bToken) const;
-
 private:
+    // Возвращает кол-во аргументов фукнции
+    // Если это перменная, то кол-во = 0
+    int getArgsCount(const std::string &name) const;
+
     // Вычисления встроенных функций
     double funcCalc(const std::string &funcName, double x) const;
 
