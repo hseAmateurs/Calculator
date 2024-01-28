@@ -10,6 +10,8 @@ set(SOURCE_FILES
         src/token.h
         src/funcHandler.cpp
         src/funcHandler.h
+        src/shuntingYard.cpp
+        src/shuntingYard.h
 )
 
 add_executable(Calculator ${SOURCE_FILES})

@@ -1,8 +1,10 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <iostream>
 #include "token.h"
 #include "shuntingYard.h"
+
 using namespace std;
 
 double ShuntingYard::sumUp(const vector<Token> &input) {
@@ -60,10 +62,10 @@ void ShuntingYard::computeForParantheses(vector<double> &outputStack, const Toke
     }
 }
 
-void ShuntingYard::compute(const vector<Token> &input, vector<Token> &operatorStack, vector<double> &outputStack, const Token &token,
+void ShuntingYard::compute(const vector<Token> &input, vector<Token> &operatorStack, vector<double> &outputStack,
+                           const Token &token,
                            const bool &isSecondLoop) {
-    double* buffer = new double[100];
-    int bufferTop = 0;
+    vector<double> buffer;
     switch (token.tokenType) {
         case Token::INT:
         case Token::DOUBLE:
@@ -108,10 +110,19 @@ void ShuntingYard::compute(const vector<Token> &input, vector<Token> &operatorSt
                             if (operatorStack.back().value == "(") break;
                         }
                     }
-                    if (operatorStack.back().value == "("){
+                    if (operatorStack.back().value == "(") {
                         operatorStack.pop_back();
-                        if (operatorStack.back().tokenType == Token::FUNC){
-
+                        Token funcToken = operatorStack.back();
+                        if (funcToken.tokenType == Token::FUNC) {
+                            int argsCount = funcHandler.getArgsCount(funcToken.value);
+                            if (argsCount != buffer.size()) {
+                                std::cerr << "Wrong arg count";
+                                exit(-1);
+                            }
+                            vector<Token> args;
+                            for (const auto &val: buffer)
+                                args.emplace_back(to_string(val), Token::DOUBLE);
+                            funcHandler.getFunc(funcToken.value, args);
                         }
                     }
                     if (!isSecondLoop)
@@ -133,9 +144,9 @@ void ShuntingYard::compute(const vector<Token> &input, vector<Token> &operatorSt
             operatorStack.pop_back();
             break;
         case Token::VAR:
-            //sumUp for var
+            outputStack.push_back(sumUp(funcHandler.getFunc(token.value, {})));
+            break;
         case Token::FUNC:
-            bufferTop = 0;
             operatorStack.push_back(token);
             //представить функцию токенами
             //sumUp
@@ -145,7 +156,7 @@ void ShuntingYard::compute(const vector<Token> &input, vector<Token> &operatorSt
                 operatorStack.pop_back();
                 computeForParantheses(outputStack, last);
             }
-            buffer[bufferTop] = outputStack.back();
+            buffer.push_back(outputStack.back());
             outputStack.pop_back();
             break;
     }

@@ -7,6 +7,7 @@
 #include "token.h"
 #include "mathExpr.h"
 #include "funcHandler.h"
+#include "shuntingYard.h"
 
 // Подсчёт кол-ва знаков =
 int countEqualSign(const MathExpr &expr) {
@@ -15,6 +16,7 @@ int countEqualSign(const MathExpr &expr) {
         if (ch == '=') count++;
     return count;
 }
+
 /*
 f(x, y) = x + a + y
 y1 = f(1, a) + 8 * (7 - 7)
@@ -67,6 +69,8 @@ int main() {
             exit(-1);
         }
     }
+    ShuntingYard shuntingYard(funcHandler);
+    double res = shuntingYard.sumUp(tokens);
 
 //    for (const auto & token : tokens) {
 //        std::cout << token.value << " "
@@ -74,6 +78,6 @@ int main() {
 //                  << token.operatorType << " "
 //                  << (int)token.operatorPriority << std::endl;
 //    }
-    std::cout << "end\n";
+    std::cout << "Answer:\n" << res << "\n";
     return 0;
 }
