@@ -6,11 +6,13 @@
 
 #include <iostream>
 #include <valarray>
-#include <math.h>
+#include <cmath>
 
 bool FuncHandler::addFunc(std::string &name, const int argsCount, const std::vector<Token> tokens) {
     // Дебаг информация
+#ifdef DEBUG
     std::cout << "addFunc: " << name << " " << argsCount << " " << tokens.size() << "\n";
+#endif
     if (isBuiltInFunc(name)) {
         if (tokens.empty()) {
             emptyRows--;
@@ -31,11 +33,13 @@ bool FuncHandler::addFunc(std::string &name, const int argsCount, const std::vec
     }
     functions[std::move(name)] = std::make_pair(argsCount, tokens);
     // Дебаг информация
+#ifdef DEBUG
     std::cout << "Current map: " << emptyRows << "\n";
     for (const auto &el: functions) {
         std::cout << el.first << " " << el.second.first << " " << el.second.second.size() << "\n";
     }
     std::cout << std::endl;
+#endif
     return true;
 }
 

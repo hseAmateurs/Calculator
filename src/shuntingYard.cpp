@@ -61,6 +61,7 @@ void ShuntingYard::computeOnce(vector<double> &outputStack, const Token &token) 
                 default:
                     error("Неизвестный оператор");
             }
+            break;
         default:
             error("Неизвестный тип оператора");
     }
@@ -150,7 +151,7 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
     }
 }
 
-bool FuncHandler::error(const std::string &msg) const {
+bool ShuntingYard::error(const std::string &msg) const {
     std::cerr << msg << std::endl;
     exit(-1);
     return false;

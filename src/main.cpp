@@ -17,13 +17,9 @@ int countEqualSign(const MathExpr &expr) {
     return count;
 }
 
-/*
-f(x, y) = x + a + y
-y1 = f(1, a) + 8 * (7 - 7)
-f(tr(1, 2), 1) + a + y1
- */
 int main() {
     setbuf(stdout, 0);
+    std::cout << "Введите пример:\n";
     // Класс обработки функций
     FuncHandler funcHandler;
 
@@ -72,12 +68,6 @@ int main() {
     ShuntingYard shuntingYard(funcHandler);
     double res = shuntingYard.sumUp(tokens);
 
-//    for (const auto & token : tokens) {
-//        std::cout << token.value << " "
-//                  << token.tokenType << " "
-//                  << token.operatorType << " "
-//                  << (int)token.operatorPriority << std::endl;
-//    }
-    std::cout << "Answer:\n" << res << "\n";
+    std::cout << "Ответ:\n" << res << "\n";
     return 0;
 }
