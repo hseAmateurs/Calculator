@@ -12,11 +12,11 @@ public:
     double sumUp(const vector<Token> &input);
 
 private:
-    void computeForParantheses(vector<double> &outputStack, const Token &token);
+    void computeOnce(vector<double> &outputStack, const Token &token);
 
     void
-    compute(const vector<Token> &input, vector<Token> &operatorStack, vector<double> &outputStack, const Token &token,
-            const bool &isSecondLoop);
+    compute(vector<vector<double>> &buffer, vector<Token> &operatorStack, vector<double> &outputStack, const Token &token,
+            const bool &isSecondLoop, bool &isFunction, int &funcCount);
 
     FuncHandler funcHandler;
 };
