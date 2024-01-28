@@ -102,7 +102,7 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
                 Token last = operatorStack.back();
                 operatorStack.pop_back();
                 if (last.tokenType == Token::SEPARATOR) continue;
-                computeOnce(isFunction ? buffer.back() : outputStack, token);
+                computeOnce(isFunction ? buffer.back() : outputStack, last);
             }
             operatorStack.pop_back();
             if (operatorStack.back().tokenType == Token::FUNC) {
