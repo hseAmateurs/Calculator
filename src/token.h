@@ -34,6 +34,8 @@ public:
     char operatorPriority;
     OperatorType operatorType;
 
+    Token() = default;
+
     Token(std::string value, TokenType tokenType, char operatorPriority = -1,
           OperatorType operatorType = OperatorType::NONE) :
             value(std::move(value)),

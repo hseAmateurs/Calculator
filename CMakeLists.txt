@@ -8,6 +8,8 @@ set(SOURCE_FILES
         src/mathExpr.cpp
         src/mathExpr.h
         src/token.h
+        src/funcHandler.cpp
+        src/funcHandler.h
 )
 
 add_executable(Calculator ${SOURCE_FILES})
