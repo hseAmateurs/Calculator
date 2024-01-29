@@ -16,42 +16,38 @@ void FuncHandler::addFunc(std::string &name, const int argsCount, const std::vec
     std::cout << "addFunc: " << name << " " << argsCount << " " << tokens.size() << "\n";
 #endif
     if (isBuiltInFunc(name)) {
-        if (tokens.empty()) {
-            emptyRows--;
-            return;
-        }
-        else throw TokenizeException(TokenizeException::BUILTIN_REDECLARATION, name);
+        if (tokens.empty()) return;
+        else
+            throw TokenizeException(TokenizeException::BUILTIN_REDECLARATION, name);
     }
+
     // Если функция уже занесена в список
     if (functions.find(name) != functions.end()) {
-        emptyRows--;
-        // Скипаем т.к. пустая фукнция уже есть в таблицеы
+        // Скипаем т.к. пустая фукнция уже есть в таблице
         if (tokens.empty()) return;
         // И она объявлена
-        if (!functions.at(name).second.empty()) {
-            if (tokens.empty()) return;
-            else throw TokenizeException(TokenizeException::ALREADY_DECLARED, name);
-        }
+        if (!functions.at(name).second.empty())
+            throw TokenizeException(TokenizeException::ALREADY_DECLARED, name);
     }
     functions[std::move(name)] = std::make_pair(argsCount, tokens);
     // Дебаг информация
 #ifdef DEBUG
-    std::cout << "Current map: " << emptyRows << "\n";
-    for (const auto &el: functions) {
-        std::cout << el.first << " " << el.second.first << " " << el.second.second.size() << "\n";
-    }
-    std::cout << std::endl;
+    //    std::cout << "Current map: " << emptyRows << "\n";
+        for (const auto &el: functions) {
+            std::cout << el.first << " " << el.second.first << " " << el.second.second.size() << "\n";
+        }
+        std::cout << std::endl;
 #endif
-    return;
 }
 
 void FuncHandler::addFunc(std::string name) {
-    emptyRows++;
     addFunc(name, 0, {});
 }
 
 bool FuncHandler::isFiled() const {
-    return !emptyRows;
+    for (const auto &el: functions)
+        if (el.second.second.empty()) return false;
+    return true;
 }
 
 void FuncHandler::factorizeFunc(const std::vector<Token> &tokens) {
@@ -78,7 +74,7 @@ std::vector<Token> FuncHandler::getFunc(const std::string &name, const std::vect
     size_t argsSize = args.size();
 
     // Проверка количества подаваемых аргументов с необходимым
-    if(argsSize != getArgsCount(name))
+    if (argsSize != getArgsCount(name))
         throw CalcException(CalcException::BAD_ARGS, name);
 
     std::vector<Token> tokens;
@@ -189,5 +185,4 @@ bool FuncHandler::isBuiltInFunc(const std::string &name) const {
 
 void FuncHandler::clear() {
     functions.clear();
-    emptyRows = 0;
 }

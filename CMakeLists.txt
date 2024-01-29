@@ -3,7 +3,7 @@ project(Calculator)
 
 set(CMAKE_CXX_STANDARD 14)
 
-#add_compile_definitions(DEBUG)
+add_compile_definitions(DEBUG)
 
 set(SOURCE_FILES
         src/main.cpp

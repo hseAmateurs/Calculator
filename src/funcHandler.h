@@ -48,9 +48,6 @@ private:
 
     std::map<std::string, std::pair<int, std::vector<Token>>> functions;
 
-    // Счётчик необъявленных функций
-    int emptyRows = 0;
-
     std::vector<std::string> builtInFunctions = {"pi", "e",
                                                  "abs", "sqrt", "ln", "lg", "log2", "sign", "exp",
                                                  "sin", "cos", "tg", "ctg", "arcsin", "arccos", "arctg", "arcctg"};
