@@ -23,6 +23,13 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
     char nextChar = expr[i - 1];
     Token::TokenType tokenType = getCharType(nextChar);
     std::string buffer{nextChar};
+    switch (tokenType) {
+        case Token::OPERATOR:
+        case Token::R_PARANTHESIS:
+        case Token::SEPARATOR:
+            if(nextChar != '-')
+                throw TokenizeException(CalcException::SYNTAX_ERROR, buffer);
+    }
 
     Token::TokenType nextToken;
     size_t exprSize = expr.size();
@@ -145,7 +152,7 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
                 tokenType = nextToken;
                 break;
             default:
-                throw TokenizeException(TokenizeException::UNEXPECTED_ERROR, buffer+nextChar);
+                throw TokenizeException(TokenizeException::BAD_CHAR, buffer+nextChar);
         }
     }
     // Обработка последнего токена
@@ -237,8 +244,7 @@ char MathExpr::getOperatorPriority(const char &operatorName) const {
     try {
         priority = operatorPriority.at(operatorName);
     } catch (const std::out_of_range &ex) {
-        std::cerr << "There's no operator: " << operatorName << "\n";
-        exit(-1);
+        throw TokenizeException(CalcException::BAD_CHAR, std::string{operatorName});
     }
     return priority;
 }
