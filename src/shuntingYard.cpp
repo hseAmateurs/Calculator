@@ -79,7 +79,12 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
         case Token::OPERATOR:
             switch (token.operatorType) {
                 case Token::UNARY:
-                    operatorStack.push_back(token);
+                    if (!isSecondLoop)
+                        operatorStack.push_back(token);
+                    else{
+                        outputStack.back() = -1 * outputStack.back();
+                        operatorStack.pop_back();
+                    }
                     break;
                 case Token::BINARY:
                     if (!operatorStack.empty() && operatorStack.back().operatorPriority >= token.operatorPriority &&
