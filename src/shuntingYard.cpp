@@ -133,6 +133,8 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
             }
             break;
         case Token::VAR:
+            isFunction ?
+            buffer.back().push_back(sumUp(funcHandler.getFunc(token.value, {}))) :
             outputStack.push_back(sumUp(funcHandler.getFunc(token.value, {})));
             break;
         case Token::FUNC:
