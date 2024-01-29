@@ -7,8 +7,10 @@
 #include <iostream>
 #include <valarray>
 #include <cmath>
+#include "calcException.h"
+#include "tokenizeException.h"
 
-bool FuncHandler::addFunc(std::string &name, const int argsCount, const std::vector<Token> tokens) {
+void FuncHandler::addFunc(std::string &name, const int argsCount, const std::vector<Token> tokens) {
     // Дебаг информация
 #ifdef DEBUG
     std::cout << "addFunc: " << name << " " << argsCount << " " << tokens.size() << "\n";
@@ -16,19 +18,19 @@ bool FuncHandler::addFunc(std::string &name, const int argsCount, const std::vec
     if (isBuiltInFunc(name)) {
         if (tokens.empty()) {
             emptyRows--;
-            return true;
+            return;
         }
-        else return error("Вы не можете переобъявить встроенные функции/константы");
+        else throw TokenizeException(TokenizeException::BUILTIN_REDECLARATION, name);
     }
     // Если функция уже занесена в список
     if (functions.find(name) != functions.end()) {
         emptyRows--;
         // Скипаем т.к. пустая фукнция уже есть в таблицеы
-        if (tokens.empty()) return true;
+        if (tokens.empty()) return;
         // И она объявлена
         if (!functions.at(name).second.empty()) {
-            if (tokens.empty()) return true;
-            else return error("Функция/переменная уже объявлена");
+            if (tokens.empty()) return;
+            else throw TokenizeException(TokenizeException::ALREADY_DECLARED, name);
         }
     }
     functions[std::move(name)] = std::make_pair(argsCount, tokens);
@@ -40,18 +42,12 @@ bool FuncHandler::addFunc(std::string &name, const int argsCount, const std::vec
     }
     std::cout << std::endl;
 #endif
-    return true;
+    return;
 }
 
-bool FuncHandler::addFunc(std::string name) {
+void FuncHandler::addFunc(std::string name) {
     emptyRows++;
-    return addFunc(name, 0, {});
-}
-
-bool FuncHandler::error(const std::string &msg) const {
-    std::cerr << msg << std::endl;
-    exit(-1);
-    return false;
+    addFunc(name, 0, {});
 }
 
 bool FuncHandler::isFiled() const {
@@ -72,10 +68,9 @@ int FuncHandler::getArgsCount(const std::string &name) const {
         if (lowerName == "e" || lowerName == "pi") return 0;
         else return 1;
     }
-    if (functions.find(name) == functions.end()) {
-        error("Функция не объявлена");
-        return -1;
-    }
+    if (functions.find(name) == functions.end())
+        throw CalcException(CalcException::UNDECLARED_FUNC, name);
+
     return functions.at(name).first;
 }
 
@@ -84,7 +79,7 @@ std::vector<Token> FuncHandler::getFunc(const std::string &name, const std::vect
 
     // Проверка количества подаваемых аргументов с необходимым
     if(argsSize != getArgsCount(name))
-        error("Некорректное количество аргументов функции");
+        throw CalcException(CalcException::BAD_ARGS, name);
 
     std::vector<Token> tokens;
     // Вычисление значения, если это встроенная фукнция
@@ -175,13 +170,13 @@ double FuncHandler::funcCalc(const std::string &name, const double x) const {
     else if (name == "arcctg") {
         res = M_PI / 2 - std::atan(x);
     }
-    else error("Неизвестная функция");
+    else throw CalcException(CalcException::UNDECLARED_FUNC, name);
     if (std::isnan(res))
-        error("Вы не учли область определения функции");
+        throw CalcException(CalcException::BAD_ARGS, name);
     return res;
 }
 
-std::string FuncHandler::toLower(const std::string &str) const {
+std::string FuncHandler::toLower(const std::string &str) {
     std::string res;
     for (const char &c: str)
         res += std::tolower(c);
@@ -190,4 +185,9 @@ std::string FuncHandler::toLower(const std::string &str) const {
 
 bool FuncHandler::isBuiltInFunc(const std::string &name) const {
     return std::find(builtInFunctions.begin(), builtInFunctions.end(), toLower(name)) != builtInFunctions.end();
+}
+
+void FuncHandler::clear() {
+    functions.clear();
+    emptyRows = 0;
 }

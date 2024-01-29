@@ -14,6 +14,8 @@ set(SOURCE_FILES
         src/funcHandler.h
         src/shuntingYard.cpp
         src/shuntingYard.h
+        src/calcException.h
+        src/tokenizeException.h
 )
 
 add_executable(Calculator ${SOURCE_FILES})

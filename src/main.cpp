@@ -4,10 +4,13 @@
 
 #include <iostream>
 #include <vector>
+#include <limits>
 #include "token.h"
 #include "mathExpr.h"
 #include "funcHandler.h"
 #include "shuntingYard.h"
+#include "calcException.h"
+#include "tokenizeException.h"
 
 // Подсчёт кол-ва знаков =
 int countEqualSign(const MathExpr &expr) {
@@ -19,7 +22,6 @@ int countEqualSign(const MathExpr &expr) {
 
 int main() {
     setbuf(stdout, 0);
-    std::cout << "Введите пример:\n";
     // Класс обработки функций
     FuncHandler funcHandler;
 
@@ -34,40 +36,67 @@ int main() {
     std::string funcName;
     int argsCount;
     std::vector<Token> funcTokens;
-    // Цикл работает, пока таблица функций не будет полностью объявлена
-    while (!isMain || !funcHandler.isFiled()) {
-        getline(std::cin, expression);
-        if (expression.empty()) {
-            if (!isMain)
-                std::cout << "Вы не ввели основное выражение\n";
-            else
-                funcHandler.printUndeclaredFunc();
-            continue;
-        }
-        int countEqual = countEqualSign(expression);
-        if (countEqual == 1) {
-            std::tie(funcTokens, funcName, argsCount) = expression.tokenize(MathExpr::SECONDARY);
-            // Факторизация необходима для отслеживания, необъявленных функций
-            funcHandler.factorizeFunc(funcTokens);
-            funcHandler.addFunc(funcName, argsCount, funcTokens);
-        }
-        else if (countEqual == 0) {
-            if (isMain) {
-                std::cerr << "Вы уже вводили главное выражение";
-                exit(-1);
+
+    bool clearInput = true;
+    bool isRun = true;
+    while (isRun) {
+        if(clearInput) std::cout << "Введите пример:\n";
+        else std::cout << "Продолжайте ввод:\n";
+        clearInput = true;
+        try {
+            // Цикл работает, пока таблица функций не будет полностью объявлена
+            while (!isMain || !funcHandler.isFiled()) {
+                getline(std::cin, expression);
+                if (expression.empty()) {
+                    if (!isMain)
+                        throw CalcException(CalcException::NO_MAIN);
+                    else
+                        funcHandler.printUndeclaredFunc();
+                    continue;
+                }
+                if(FuncHandler::toLower(expression) == "exit") {
+                    isRun = false;
+                    break;
+                }
+                int countEqual = countEqualSign(expression);
+                if (countEqual == 1) {
+                    std::tie(funcTokens, funcName, argsCount) = expression.tokenize(MathExpr::SECONDARY);
+                    // Факторизация необходима для отслеживания, необъявленных функций
+                    funcHandler.factorizeFunc(funcTokens);
+                    funcHandler.addFunc(funcName, argsCount, funcTokens);
+                }
+                else if (countEqual == 0) {
+                    if (isMain)
+                        throw CalcException(CalcException::DUBLICATE_MAIN);
+                    tokens = std::get<0>(expression.tokenize(MathExpr::MAIN));
+                    funcHandler.factorizeFunc(tokens);
+                    isMain = true;
+                }
+                else {
+                    throw CalcException(CalcException::SYNTAX_ERROR);
+                }
             }
-            tokens = std::get<0>(expression.tokenize(MathExpr::MAIN));
-            funcHandler.factorizeFunc(tokens);
-            isMain = true;
+            if(!isRun) continue;
+            ShuntingYard shuntingYard(funcHandler);
+            double res = shuntingYard.sumUp(tokens);
+            std::cout << "Ответ:\n" << res << "\n";
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
-        else {
-            std::cerr << "Синтаксическая ошибка";
-            exit(-1);
+        catch (const TokenizeException &ex) {
+            std::cerr << "Ошибка: " << ex.desc() << "\n";
+            if(!ex.message.empty())
+                std::cerr << "< " << ex.message << " >\n";
+            clearInput = false;
+        }
+        catch (const CalcException &ex) {
+            std::cerr << "Ошибка: " << ex.desc() << "\n";
+            if(!ex.message.empty())
+                std::cerr << "< " << ex.message << " >\n";
+        }
+        if(isRun && clearInput) {
+            isMain = false;
+            funcHandler.clear();
         }
     }
-    ShuntingYard shuntingYard(funcHandler);
-    double res = shuntingYard.sumUp(tokens);
-
-    std::cout << "Ответ:\n" << res << "\n";
     return 0;
 }

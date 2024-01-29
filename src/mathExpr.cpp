@@ -5,7 +5,8 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "MathExpr.h"
+#include "mathExpr.h"
+#include "tokenizeException.h"
 
 std::tuple<std::vector<Token>, std::string, int> MathExpr::tokenize(MathExpr::Type type) {
     if (type == MAIN)
@@ -34,7 +35,8 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
             /* Токены типа DOUBLE и INT обрабатываются одинаково, за исключением, что
              * если токен уже стал DOUBLE, в нем не может появится ещё одна точка */
             case Token::DOUBLE:
-                if (nextToken == Token::DOUBLE) error("Некорректный тип числа");
+                if (nextToken == Token::DOUBLE)
+                    throw TokenizeException(TokenizeException::BAD_NUM, buffer+nextChar);
             case Token::INT:
                 switch (nextToken) {
                     case Token::INT:
@@ -48,13 +50,11 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
                         buffer = nextChar;
                         break;
                     case Token::L_PARANTHESIS:
-                        error("Ожидался оператор");
-                        break;
+                        throw TokenizeException(TokenizeException::EXPECTED_OPERATOR, buffer+nextChar);
                     case Token::VAR:
-                        error("Переменные/функции не могут начинаться с цифры");
-                        break;
+                        throw TokenizeException(TokenizeException::BAD_FUNC_NAME, buffer+nextChar);
                     default:
-                        error("Некорректный символ");
+                        throw TokenizeException(TokenizeException::BAD_CHAR, buffer+nextChar);
                 }
                 break;
             case Token::OPERATOR:
@@ -70,10 +70,9 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
                         buffer = nextChar;
                         break;
                     case Token::R_PARANTHESIS:
-                        error("Ожидалась открывающая скобка");
-                        break;
+                        throw TokenizeException(TokenizeException::EXPECTED_L_PARANTHESIS, buffer+nextChar);
                     default:
-                        error("Синтаксическая ошибка");
+                        throw TokenizeException(TokenizeException::SYNTAX_ERROR, buffer+nextChar);
                 }
                 break;
             case Token::VAR:
@@ -94,7 +93,7 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
                         buffer = nextChar;
                         break;
                     default:
-                        error("Синтаксическая ошибка");
+                        throw TokenizeException(TokenizeException::SYNTAX_ERROR, buffer+nextChar);
                 }
                 break;
             case Token::SEPARATOR:
@@ -107,17 +106,18 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
                         buffer = nextChar;
                         break;
                     case Token::OPERATOR:
-                        if (nextChar != '-') error("Синтаксическая ошибка");
+                        if (nextChar != '-')
+                            throw TokenizeException(TokenizeException::SYNTAX_ERROR, buffer+nextChar);
                         tokens.emplace_back(buffer, tokenType);
                         buffer = nextChar;
                         break;
                     case Token::R_PARANTHESIS:
                         if (tokenType == Token::SEPARATOR)
-                            error("Ожидалась открывающая скобка");
-                        else error("Выражение в скобках пустое");
-                        break;
+                            throw TokenizeException(TokenizeException::EXPECTED_L_PARANTHESIS, buffer+nextChar);
+                        else
+                            throw TokenizeException(TokenizeException::EMPTY_PARANTHESIS, buffer+nextChar);
                     default:
-                        error("Синтаксическая ошибка");
+                        throw TokenizeException(TokenizeException::SYNTAX_ERROR, buffer+nextChar);
                 }
                 break;
             case Token::R_PARANTHESIS:
@@ -131,14 +131,14 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
                     case Token::INT:
                     case Token::VAR:
                     case Token::L_PARANTHESIS:
-                        error("Ожидался оператор");
+                        throw TokenizeException(TokenizeException::EXPECTED_OPERATOR, buffer+nextChar);
                         break;
                     default:
-                        error("Синтаксическая ошибка");
+                        throw TokenizeException(TokenizeException::SYNTAX_ERROR, buffer+nextChar);
                 }
                 break;
             default:
-                std::cerr << "Unexpected way in tokenization";
+                throw TokenizeException(TokenizeException::UNEXPECTED_ERROR, buffer+nextChar);
         }
         // Пропускаем эти ситуации, т.к. они кардинально меняют тип токена
         if (tokenType == Token::DOUBLE ||
@@ -155,7 +155,7 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
             tokens.emplace_back(buffer, tokenType);
             break;
         default:
-            error("Синтаксическая ошибка");
+            throw TokenizeException(TokenizeException::SYNTAX_ERROR, buffer);
     }
 
     return tokens;
@@ -164,12 +164,14 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
 std::tuple<std::vector<Token>, std::string, int> MathExpr::handleDeclaration(const std::string &expr) {
     // Получаем всё до знака =
     std::string declaration = expr.substr(0, expr.find('='));
-    if (declaration.empty()) error("Не объявлена функция");
+    if (declaration.empty())
+        throw TokenizeException(TokenizeException::UNDECLARED_FUNC, declaration);
     // Получаем всё после знака =
     std::string definition = expr.substr(expr.find('=') + 1);
 
     std::vector<Token> declrTokens = handleDefinition(declaration);
-    if (!isDeclarationValid(declrTokens)) return {};
+    if (!isDeclarationValid(declrTokens))
+        throw TokenizeException(TokenizeException::BAD_FUNC_DECLARATION, declaration);
 
     std::vector<Token> defTokens = handleDefinition(definition);
     // Выражение — переменная
@@ -199,7 +201,7 @@ bool MathExpr::isDeclarationValid(const std::vector<Token> &tokens) const {
     if (isVar)
         return true;
     else if (!isFunc)
-        return error("Синтаксическая ошибка в объявлении фукнции/переменной");
+        return false;
 
     Token::TokenType nextToken;
     for (int i = 1; i < size; ++i) {
@@ -207,31 +209,25 @@ bool MathExpr::isDeclarationValid(const std::vector<Token> &tokens) const {
         switch (tokenType) {
             case Token::FUNC:
                 if (nextToken != Token::L_PARANTHESIS)
-                    return error("Синтаксическая ошибка в объявлении фукнции");
+                    return false;
                 break;
             case Token::L_PARANTHESIS:
             case Token::SEPARATOR:
                 if (nextToken != Token::VAR)
-                    return error("Синтаксическая ошибка в объявлении фукнции");
+                    return false;
                 break;
             case Token::VAR:
                 if (nextToken != Token::SEPARATOR && nextToken != Token::R_PARANTHESIS)
-                    return error("Синтаксическая ошибка в объявлении фукнции");
+                    return false;
                 break;
             default:
-                return error("Синтаксическая ошибка в объявлении фукнции");
+                return false;
         }
         tokenType = nextToken;
     }
     if (tokenType != Token::R_PARANTHESIS)
-        return error("Синтаксическая ошибка в объявлении фукнции");
+        return false;
     return true;
-}
-
-bool MathExpr::error(const std::string &msg) const {
-    std::cerr << msg << std::endl;
-    exit(-1);
-    return false;
 }
 
 char MathExpr::getOperatorPriority(const char &operatorName) const {

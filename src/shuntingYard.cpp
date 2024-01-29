@@ -1,10 +1,8 @@
-#include <iostream>
 #include <string>
-#include <vector>
 #include <cmath>
 #include "token.h"
 #include "shuntingYard.h"
-#include "funcHandler.h"
+#include "calcException.h"
 
 using namespace std;
 
@@ -59,11 +57,11 @@ void ShuntingYard::computeOnce(vector<double> &outputStack, const Token &token) 
                     outputStack.push_back(pow(b, a));
                     break;
                 default:
-                    error("Неизвестный оператор");
+                    throw CalcException(CalcException::UNEXPECTED_ERROR, token.value);
             }
             break;
         default:
-            error("Неизвестный тип оператора");
+            throw CalcException(CalcException::UNEXPECTED_ERROR, token.value);
     }
 }
 
@@ -149,10 +147,4 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
         default:
             break;
     }
-}
-
-bool ShuntingYard::error(const std::string &msg) const {
-    std::cerr << msg << std::endl;
-    exit(-1);
-    return false;
 }

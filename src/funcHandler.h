@@ -14,10 +14,10 @@
 class FuncHandler {
 public:
     // Непосрдественное добавление фукнции в таблицу
-    bool addFunc(std::string &name, int argsCount, std::vector<Token> tokens);
+    void addFunc(std::string &name, int argsCount, std::vector<Token> tokens);
 
     // Добавляет фукнцию в таблицу, но не объявляет её
-    bool addFunc(std::string name);
+    void addFunc(std::string name);
 
     // Проверка, объявлены ли все фукнции в таблице
     bool isFiled() const;
@@ -34,6 +34,10 @@ public:
     // Вывод необъявленных функций
     void printUndeclaredFunc() const;
 
+    static std::string toLower(const std::string &str);
+
+    void clear();
+
 private:
     // Возвращает кол-во аргументов фукнции
     // Если это перменная, то кол-во = 0
@@ -41,10 +45,6 @@ private:
 
     // Вычисления встроенных функций
     double funcCalc(const std::string &funcName, double x) const;
-
-    std::string toLower(const std::string &str) const;
-
-    bool error(const std::string &msg) const;
 
     std::map<std::string, std::pair<int, std::vector<Token>>> functions;
 

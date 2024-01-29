@@ -18,7 +18,5 @@ private:
     compute(vector<vector<double>> &buffer, vector<Token> &operatorStack, vector<double> &outputStack, const Token &token,
             const bool &isSecondLoop, bool &isFunction, int &funcCount);
 
-    bool error(const std::string &msg) const;
-
     FuncHandler funcHandler;
 };
