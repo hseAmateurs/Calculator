@@ -67,7 +67,6 @@ int main() {
     }
     ShuntingYard shuntingYard(funcHandler);
     double res = shuntingYard.sumUp(tokens);
-
-    std::cout << "Ответ:\n" << res << "\n";
+    std::cout << "Ответ:\n" <<  res - remainder(res, 0.0001) << "\n";
     return 0;
 }
