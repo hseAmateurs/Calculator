@@ -68,7 +68,7 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
                     case Token::L_PARANTHESIS:
                         if (tokens.empty() || tokens.back().tokenType == Token::SEPARATOR ||
                             tokens.back().tokenType == Token::L_PARANTHESIS)
-                            tokens.emplace_back(buffer, tokenType, 0, Token::UNARY);
+                            tokens.emplace_back(buffer, tokenType, 2, Token::UNARY);
                         else tokens.emplace_back(buffer, tokenType, getOperatorPriority(buffer[0]), Token::BINARY);
                         buffer = nextChar;
                         break;
