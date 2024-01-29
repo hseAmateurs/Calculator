@@ -51,8 +51,10 @@ int main() {
                 if (expression.empty()) {
                     if (!isMain)
                         throw TokenizeException(TokenizeException::NO_MAIN);
-                    else
+                    else {
                         funcHandler.printUndeclaredFunc();
+                        std::cout << "Продолжите ввод:\n";
+                    }
                     continue;
                 }
                 if(FuncHandler::toLower(expression) == "exit") {
@@ -94,6 +96,7 @@ int main() {
             std::cerr << "Ошибка: " << ex.desc() << "\n";
             if(!ex.message.empty())
                 std::cerr << "< " << ex.message << " >\n";
+            std::cerr << std::endl;
             std::cerr.flush();
         }
         if(isRun && clearInput) {

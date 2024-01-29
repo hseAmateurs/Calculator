@@ -102,17 +102,17 @@ std::vector<Token> FuncHandler::getFunc(const std::string &name, const std::vect
 }
 
 void FuncHandler::printUndeclaredFunc() const {
-    std::cout << "Вы не объявили функции/переменные:\n";
+    std::cerr << "Вы не объявили функции/переменные:\n";
     bool first = true;
     for (const auto &el: functions) {
         if (!el.second.second.empty()) continue;
         if (first) {
-            std::cout << el.first;
+            std::cerr << el.first;
             first = false;
         }
-        else std::cout << ", " << el.first;
+        else std::cerr << ", " << el.first;
     }
-    std::cout << std::endl;
+    std::cerr << std::endl;
 }
 
 double FuncHandler::funcCalc(const std::string &name, const double x) const {
