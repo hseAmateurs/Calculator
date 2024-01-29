@@ -48,6 +48,7 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
                     case Token::R_PARANTHESIS:
                         tokens.emplace_back(buffer, tokenType);
                         buffer = nextChar;
+                        tokenType = nextToken;
                         break;
                     case Token::L_PARANTHESIS:
                         throw TokenizeException(TokenizeException::EXPECTED_OPERATOR, buffer+nextChar);
@@ -74,6 +75,7 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
                     default:
                         throw TokenizeException(TokenizeException::SYNTAX_ERROR, buffer+nextChar);
                 }
+                tokenType = nextToken;
                 break;
             case Token::VAR:
                 switch (nextToken) {
@@ -95,6 +97,8 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
                     default:
                         throw TokenizeException(TokenizeException::SYNTAX_ERROR, buffer+nextChar);
                 }
+                if(nextToken != Token::INT)
+                    tokenType = nextToken;
                 break;
             case Token::SEPARATOR:
             case Token::L_PARANTHESIS:
@@ -119,6 +123,7 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
                     default:
                         throw TokenizeException(TokenizeException::SYNTAX_ERROR, buffer+nextChar);
                 }
+                tokenType = nextToken;
                 break;
             case Token::R_PARANTHESIS:
                 switch (nextToken) {
@@ -136,15 +141,11 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
                     default:
                         throw TokenizeException(TokenizeException::SYNTAX_ERROR, buffer+nextChar);
                 }
+                tokenType = nextToken;
                 break;
             default:
                 throw TokenizeException(TokenizeException::UNEXPECTED_ERROR, buffer+nextChar);
         }
-        // Пропускаем эти ситуации, т.к. они кардинально меняют тип токена
-        if (tokenType == Token::DOUBLE ||
-            (tokenType == Token::VAR && nextToken == Token::INT))
-            continue;
-        tokenType = nextToken;
     }
     // Обработка последнего токена
     switch (tokenType) {

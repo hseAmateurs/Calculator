@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <limits>
+#include <cmath>
 #include "token.h"
 #include "mathExpr.h"
 #include "funcHandler.h"
@@ -49,7 +50,7 @@ int main() {
                 getline(std::cin, expression);
                 if (expression.empty()) {
                     if (!isMain)
-                        throw CalcException(CalcException::NO_MAIN);
+                        throw TokenizeException(TokenizeException::NO_MAIN);
                     else
                         funcHandler.printUndeclaredFunc();
                     continue;
@@ -79,7 +80,7 @@ int main() {
             if(!isRun) continue;
             ShuntingYard shuntingYard(funcHandler);
             double res = shuntingYard.sumUp(tokens);
-            std::cout << "Ответ:\n" << res << "\n";
+            std::cout << "Ответ:\n" <<  res - remainder(res, 0.0001) << "\n";
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
         catch (const TokenizeException &ex) {
