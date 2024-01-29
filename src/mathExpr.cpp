@@ -57,6 +57,8 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
                     default:
                         throw TokenizeException(TokenizeException::BAD_CHAR, buffer+nextChar);
                 }
+                if(nextToken != Token::INT)
+                    tokenType = nextToken;
                 break;
             case Token::OPERATOR:
                 switch (nextToken) {
@@ -137,7 +139,6 @@ std::vector<Token> MathExpr::handleDefinition(const std::string &expr) {
                     case Token::VAR:
                     case Token::L_PARANTHESIS:
                         throw TokenizeException(TokenizeException::EXPECTED_OPERATOR, buffer+nextChar);
-                        break;
                     default:
                         throw TokenizeException(TokenizeException::SYNTAX_ERROR, buffer+nextChar);
                 }

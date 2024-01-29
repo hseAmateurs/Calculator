@@ -42,7 +42,7 @@ int main() {
     bool isRun = true;
     while (isRun) {
         if(clearInput) std::cout << "Введите пример:\n";
-        else std::cout << "Продолжайте ввод:\n";
+        else std::cout << "Продолжите ввод:\n";
         clearInput = true;
         try {
             // Цикл работает, пока таблица функций не будет полностью объявлена
@@ -68,13 +68,13 @@ int main() {
                 }
                 else if (countEqual == 0) {
                     if (isMain)
-                        throw CalcException(CalcException::DUBLICATE_MAIN);
+                        throw TokenizeException(TokenizeException::DUBLICATE_MAIN);
                     tokens = std::get<0>(expression.tokenize(MathExpr::MAIN));
                     funcHandler.factorizeFunc(tokens);
                     isMain = true;
                 }
                 else {
-                    throw CalcException(CalcException::SYNTAX_ERROR);
+                    throw TokenizeException(TokenizeException::SYNTAX_ERROR);
                 }
             }
             if(!isRun) continue;
@@ -87,12 +87,14 @@ int main() {
             std::cerr << "Ошибка: " << ex.desc() << "\n";
             if(!ex.message.empty())
                 std::cerr << "< " << ex.message << " >\n";
+            std::cerr.flush();
             clearInput = false;
         }
         catch (const CalcException &ex) {
             std::cerr << "Ошибка: " << ex.desc() << "\n";
             if(!ex.message.empty())
                 std::cerr << "< " << ex.message << " >\n";
+            std::cerr.flush();
         }
         if(isRun && clearInput) {
             isMain = false;
