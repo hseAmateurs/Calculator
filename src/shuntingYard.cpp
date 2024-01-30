@@ -1,3 +1,4 @@
+#include <iostream>
 #include <string>
 #include <cmath>
 #include "token.h"
@@ -6,7 +7,26 @@
 
 using namespace std;
 
+bool ShuntingYard::areParentheses(const vector<Token> &input) {
+    vector<Token> parenthesesStack;
+    for (Token token: input){
+        if (token.tokenType == Token::L_PARANTHESIS)
+            parenthesesStack.push_back(token);
+        else if (token.tokenType == Token::R_PARANTHESIS){
+            if (parenthesesStack.back().tokenType == Token::L_PARANTHESIS)
+                parenthesesStack.pop_back();
+            else
+                return false;
+        }
+    }
+    if (parenthesesStack.empty()) return true;
+    return false;
+}
+
 double ShuntingYard::sumUp(const vector<Token> &input) {
+    if (!areParentheses(input)){
+        throw CalcException(CalcException::BAD_CHAR, "Неправильное расположение скобок");
+    }
     vector<Token> operatorStack;
     vector<double> outputStack;
     vector<vector<double>> buffer;

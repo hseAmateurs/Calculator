@@ -14,6 +14,8 @@ public:
 private:
     void computeOnce(vector<double> &outputStack, const Token &token);
 
+    bool areParentheses(const vector<Token> &input);
+
     void
     compute(vector<vector<double>> &buffer, vector<Token> &operatorStack, vector<double> &outputStack, const Token &token,
             const bool &isSecondLoop, bool &isFunction, int &funcCount);
