@@ -25,7 +25,7 @@ bool ShuntingYard::areParentheses(const vector<Token> &input) {
 
 double ShuntingYard::sumUp(const vector<Token> &input) {
     if (!areParentheses(input)){
-        throw CalcException(CalcException::SYNTAX_ERROR, "Неправильное расположение скобок");
+        throw CalcException(CalcException::BAD_PARANTHESIS);
     }
     vector<Token> operatorStack;
     vector<double> outputStack;
@@ -156,7 +156,7 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
             //проверка на зацикленность функций
             for (const Token& func: isFunction){
                 if (func.value == token.value){
-                    throw CalcException(CalcException::BAD_ARGS, "Повторный вызов функции");
+                    throw CalcException(CalcException::CYCLIC_FUNC, token.value);
                 }
             }
             isFunction.push_back(token);

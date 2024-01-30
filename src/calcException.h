@@ -27,7 +27,8 @@ public:
         BAD_ARGS,
         DUBLICATE_MAIN,
         NO_MAIN,
-        BAD_PARANTHESIS
+        BAD_PARANTHESIS,
+        CYCLIC_FUNC
     };
 
     explicit CalcException(Type type, std::string message = "") : type(type), message(std::move(message)) { };
@@ -55,7 +56,8 @@ private:
             "Некорректные аргументы функции",
             "Вы уже вводили главное выражение",
             "Вы не ввели основное выражение",
-            "Некорректная расстановка скобок"
+            "Некорректная расстановка скобок",
+            "Зацикленный вызов фукнций"
     };
 };
 
