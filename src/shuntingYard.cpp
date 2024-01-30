@@ -120,7 +120,6 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
                 vector<Token> args;
                 for (const auto &val: buffer.back())
                     args.emplace_back(to_string(val), Token::DOUBLE);
-                buffer.pop_back();
                 args = funcHandler.getFunc(operatorStack.back().value, args);
                 if (isFunction) {
                     buffer.pop_back();
