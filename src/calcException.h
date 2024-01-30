@@ -26,7 +26,8 @@ public:
         ALREADY_DECLARED,
         BAD_ARGS,
         DUBLICATE_MAIN,
-        NO_MAIN
+        NO_MAIN,
+        BAD_PARANTHESIS
     };
 
     explicit CalcException(Type type, std::string message = "") : type(type), message(std::move(message)) { };
@@ -53,7 +54,8 @@ private:
             "Функция/переменная уже объявлена",
             "Некорректные аргументы функции",
             "Вы уже вводили главное выражение",
-            "Вы не ввели основное выражение"
+            "Вы не ввели основное выражение",
+            "Некорректная расстановка скобок"
     };
 };
 
