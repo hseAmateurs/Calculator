@@ -9,7 +9,7 @@ using namespace std;
 
 bool ShuntingYard::areParentheses(const vector<Token> &input) {
     vector<Token> parenthesesStack;
-    for (Token token: input){
+    for (const Token& token: input){
         if (token.tokenType == Token::L_PARANTHESIS)
             parenthesesStack.push_back(token);
         else if (token.tokenType == Token::R_PARANTHESIS){
@@ -25,13 +25,11 @@ bool ShuntingYard::areParentheses(const vector<Token> &input) {
 
 double ShuntingYard::sumUp(const vector<Token> &input) {
     if (!areParentheses(input)){
-        throw CalcException(CalcException::BAD_PARANTHESIS);
+        throw CalcException(CalcException::SYNTAX_ERROR, "Неправильное расположение скобок");
     }
     vector<Token> operatorStack;
     vector<double> outputStack;
     vector<vector<double>> buffer;
-    bool isFunction = false;
-    int funcCount = 0;
     Token token;
     int i = 0;
     bool isSecondLoop = false;
@@ -43,7 +41,7 @@ double ShuntingYard::sumUp(const vector<Token> &input) {
             if (operatorStack.empty()) break;
             token = operatorStack.back();
         }
-        compute(buffer, operatorStack, outputStack, token, isSecondLoop, isFunction, funcCount);
+        compute(buffer, operatorStack, outputStack, token, isSecondLoop);
         i++;
     }
     return outputStack.back();
@@ -87,11 +85,11 @@ void ShuntingYard::computeOnce(vector<double> &outputStack, const Token &token) 
 
 void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operatorStack, vector<double> &outputStack,
                            const Token &token,
-                           const bool &isSecondLoop, bool &isFunction, int &funcCount) {
+                           const bool &isSecondLoop) {
     switch (token.tokenType) {
         case Token::INT:
         case Token::DOUBLE:
-            if (isFunction)
+            if (!buffer.empty())
                 buffer.back().push_back(stod(token.value));
             else
                 outputStack.push_back(stod(token.value));
@@ -111,7 +109,7 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
                         operatorStack.back().value != "(") {
                         while (!operatorStack.empty() &&
                                operatorStack.back().operatorPriority >= token.operatorPriority) {
-                            computeOnce(isFunction ? buffer.back() : outputStack, operatorStack.back());
+                            computeOnce(isFunction.size() > 1 ? buffer.back() : outputStack, operatorStack.back());
                             operatorStack.pop_back();
                         }
                     }
@@ -130,36 +128,39 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
                 Token last = operatorStack.back();
                 operatorStack.pop_back();
                 if (last.tokenType == Token::SEPARATOR) continue;
-                computeOnce(isFunction ? buffer.back() : outputStack, last);
+                computeOnce(!isFunction.empty() ? buffer.back() : outputStack, last);
             }
             operatorStack.pop_back();
             if (operatorStack.back().tokenType == Token::FUNC) {
-                if (funcCount == 0) isFunction = false;
-                else funcCount--;
-
                 vector<Token> args;
                 for (const auto &val: buffer.back())
                     args.emplace_back(to_string(val), Token::DOUBLE);
                 args = funcHandler.getFunc(operatorStack.back().value, args);
-                if (isFunction) {
-                    buffer.pop_back();
+
+                if (buffer.size() > 1) {
                     buffer.back().push_back(sumUp(args));
                 }
                 else
                     outputStack.push_back(sumUp(args));
-
+                isFunction.pop_back();
+                buffer.pop_back();
                 operatorStack.pop_back();
             }
             break;
         case Token::VAR:
-            isFunction ?
-            buffer.back().push_back(sumUp(funcHandler.getFunc(token.value, {}))) :
-            outputStack.push_back(sumUp(funcHandler.getFunc(token.value, {})));
+            !isFunction.empty() ?
+                buffer.back().push_back(sumUp(funcHandler.getFunc(token.value, {}))) :
+                outputStack.push_back(sumUp(funcHandler.getFunc(token.value, {})));
             break;
         case Token::FUNC:
-            if (isFunction) funcCount++;
+            //проверка на зацикленность функций
+            for (const Token& func: isFunction){
+                if (func.value == token.value){
+                    throw CalcException(CalcException::BAD_ARGS, "Повторный вызов функции");
+                }
+            }
+            isFunction.push_back(token);
             buffer.emplace_back();
-            isFunction = true;
             operatorStack.push_back(token);
             break;
         case Token::SEPARATOR:
@@ -167,7 +168,7 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
                    operatorStack.back().tokenType != Token::SEPARATOR) {
                 Token last = operatorStack.back();
                 operatorStack.pop_back();
-                computeOnce(isFunction ? buffer.back() : outputStack, last);
+                computeOnce(!isFunction.empty() ? buffer.back() : outputStack, last);
             }
             operatorStack.push_back(token);
             break;
