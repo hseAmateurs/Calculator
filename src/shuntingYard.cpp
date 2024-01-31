@@ -25,7 +25,7 @@ bool ShuntingYard::areParentheses(const vector<Token> &input) {
 
 double ShuntingYard::sumUp(const vector<Token> &input) {
     if (!areParentheses(input)){
-        throw CalcException(CalcException::BAD_PARANTHESIS);
+        throw CalcException(CalcException::SYNTAX_ERROR, "Неправильное расположение скобок");
     }
     vector<Token> operatorStack;
     vector<double> outputStack;
@@ -128,7 +128,7 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
                 Token last = operatorStack.back();
                 operatorStack.pop_back();
                 if (last.tokenType == Token::SEPARATOR) continue;
-                computeOnce(!isFunction.empty() ? buffer.back() : outputStack, last);
+                computeOnce(!buffer.empty() ? buffer.back() : outputStack, last);
             }
             operatorStack.pop_back();
             if (operatorStack.back().tokenType == Token::FUNC) {
@@ -136,29 +136,29 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
                 for (const auto &val: buffer.back())
                     args.emplace_back(to_string(val), Token::DOUBLE);
                 args = funcHandler.getFunc(operatorStack.back().value, args);
-
-                if (buffer.size() > 1) {
+                for (const Token& func: isFunction){
+                    for (const Token& arg: args) {
+                        if (arg.tokenType == Token::FUNC && func.value == arg.value) {
+                            throw CalcException(CalcException::CYCLIC_FUNC, arg.value);
+                        }
+                    }
+                }
+                buffer.pop_back();
+                if (!buffer.empty()) {
                     buffer.back().push_back(sumUp(args));
                 }
                 else
                     outputStack.push_back(sumUp(args));
                 isFunction.pop_back();
-                buffer.pop_back();
                 operatorStack.pop_back();
             }
             break;
         case Token::VAR:
-            !isFunction.empty() ?
+            !buffer.empty() ?
                 buffer.back().push_back(sumUp(funcHandler.getFunc(token.value, {}))) :
                 outputStack.push_back(sumUp(funcHandler.getFunc(token.value, {})));
             break;
         case Token::FUNC:
-            //проверка на зацикленность функций
-            for (const Token& func: isFunction){
-                if (func.value == token.value){
-                    throw CalcException(CalcException::CYCLIC_FUNC, token.value);
-                }
-            }
             isFunction.push_back(token);
             buffer.emplace_back();
             operatorStack.push_back(token);
@@ -168,7 +168,7 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
                    operatorStack.back().tokenType != Token::SEPARATOR) {
                 Token last = operatorStack.back();
                 operatorStack.pop_back();
-                computeOnce(!isFunction.empty() ? buffer.back() : outputStack, last);
+                computeOnce(!buffer.empty() ? buffer.back() : outputStack, last);
             }
             operatorStack.push_back(token);
             break;
