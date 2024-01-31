@@ -13,8 +13,6 @@ public:
 
     void clear();
 
-    ~ShuntingYard();
-
 private:
     void computeOnce(vector<double> &outputStack, const Token &token);
 
