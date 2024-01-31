@@ -109,7 +109,7 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
                         operatorStack.back().value != "(") {
                         while (!operatorStack.empty() &&
                                operatorStack.back().operatorPriority >= token.operatorPriority) {
-                            computeOnce(isFunction.size() > 1 ? buffer.back() : outputStack, operatorStack.back());
+                            computeOnce(!buffer.empty() ? buffer.back() : outputStack, operatorStack.back());
                             operatorStack.pop_back();
                         }
                     }
