@@ -135,9 +135,16 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
                 vector<Token> args;
                 for (const auto &val: buffer.back())
                     args.emplace_back(to_string(val), Token::DOUBLE);
-                args = funcHandler.getFunc(operatorStack.back().value, args);
-
-                if (buffer.size() > 1) {
+                args = funcHandler->getFunc(operatorStack.back().value, args);
+                for (const Token& func: isFunction){
+                    for (const Token& arg: args) {
+                        if (arg.tokenType == Token::FUNC && func.value == arg.value) {
+                            throw CalcException(CalcException::CYCLIC_FUNC, arg.value);
+                        }
+                    }
+                }
+                buffer.pop_back();
+                if (!buffer.empty()) {
                     buffer.back().push_back(sumUp(args));
                 }
                 else
@@ -148,9 +155,9 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
             }
             break;
         case Token::VAR:
-            !isFunction.empty() ?
-                buffer.back().push_back(sumUp(funcHandler.getFunc(token.value, {}))) :
-                outputStack.push_back(sumUp(funcHandler.getFunc(token.value, {})));
+            !buffer.empty() ?
+                buffer.back().push_back(sumUp(funcHandler->getFunc(token.value, {}))) :
+                outputStack.push_back(sumUp(funcHandler->getFunc(token.value, {})));
             break;
         case Token::FUNC:
             //проверка на зацикленность функций
@@ -175,4 +182,12 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
         default:
             break;
     }
+}
+
+void ShuntingYard::clear() {
+    isFunction.clear();
+}
+
+ShuntingYard::~ShuntingYard() {
+    delete funcHandler;
 }

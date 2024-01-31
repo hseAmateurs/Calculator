@@ -25,6 +25,7 @@ int main() {
     setbuf(stdout, 0);
     // Класс обработки функций
     FuncHandler funcHandler;
+    ShuntingYard shuntingYard(&funcHandler);
 
     // Класс токенизации выражений
     MathExpr expression;
@@ -80,7 +81,6 @@ int main() {
                 }
             }
             if(!isRun) continue;
-            ShuntingYard shuntingYard(funcHandler);
             double res = shuntingYard.sumUp(tokens);
             std::cout << "Ответ:\n" <<  res - remainder(res, 0.0001) << "\n";
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -102,6 +102,7 @@ int main() {
         if(isRun && clearInput) {
             isMain = false;
             funcHandler.clear();
+            shuntingYard.clear();
         }
     }
     return 0;

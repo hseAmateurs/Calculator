@@ -113,7 +113,7 @@ void FuncHandler::printUndeclaredFunc() const {
 
 double FuncHandler::funcCalc(const std::string &name, const double x) const {
     double res = NAN;
-    const double accuracy = 1e-6;
+    const double accuracy = 1e-5;
     if (name == "pi") {
         res = M_PI;
     }
@@ -150,11 +150,11 @@ double FuncHandler::funcCalc(const std::string &name, const double x) const {
         res = std::cos(x);
     }
     else if (name == "tg") {
-        if (std::abs(std::fmod(x, M_PI / 2)) >= accuracy)
+        if (std::abs(std::cos(x)) >= accuracy)
             res = std::tan(x);
     }
     else if (name == "ctg") {
-        if (std::abs(std::fmod(x, M_PI)) >= accuracy)
+        if (std::abs(std::sin(x)) >= accuracy)
             res = 1 / std::tan(x);
     }
     else if (name == "arcsin") {
