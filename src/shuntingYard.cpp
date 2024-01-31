@@ -135,7 +135,7 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
                 vector<Token> args;
                 for (const auto &val: buffer.back())
                     args.emplace_back(to_string(val), Token::DOUBLE);
-                args = funcHandler.getFunc(operatorStack.back().value, args);
+                args = funcHandler->getFunc(operatorStack.back().value, args);
                 for (const Token& func: isFunction){
                     for (const Token& arg: args) {
                         if (arg.tokenType == Token::FUNC && func.value == arg.value) {
@@ -155,8 +155,8 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
             break;
         case Token::VAR:
             !buffer.empty() ?
-                buffer.back().push_back(sumUp(funcHandler.getFunc(token.value, {}))) :
-                outputStack.push_back(sumUp(funcHandler.getFunc(token.value, {})));
+                buffer.back().push_back(sumUp(funcHandler->getFunc(token.value, {}))) :
+                outputStack.push_back(sumUp(funcHandler->getFunc(token.value, {})));
             break;
         case Token::FUNC:
             isFunction.push_back(token);
@@ -175,4 +175,12 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
         default:
             break;
     }
+}
+
+void ShuntingYard::clear() {
+    isFunction.clear();
+}
+
+ShuntingYard::~ShuntingYard() {
+    delete funcHandler;
 }
