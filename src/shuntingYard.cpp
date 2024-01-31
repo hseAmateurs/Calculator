@@ -87,6 +87,7 @@ void ShuntingYard::computeOnce(vector<double> &outputStack, const Token &token) 
 void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operatorStack, vector<double> &outputStack,
                            const Token &token,
                            const bool &isSecondLoop) {
+    vector<Token> args;
     switch (token.tokenType) {
         case Token::INT:
         case Token::DOUBLE:
@@ -133,13 +134,20 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
             }
             operatorStack.pop_back();
             if (operatorStack.back().tokenType == Token::FUNC) {
-                vector<Token> args;
+                args.clear();
                 for (const auto &val: buffer.back())
                     args.emplace_back(to_string(val), Token::DOUBLE);
                 args = funcHandler->getFunc(operatorStack.back().value, args);
                 for (const Token& func: isFunction){
                     for (const Token& arg: args) {
                         if (arg.tokenType == Token::FUNC && func.value == arg.value) {
+                            throw CalcException(CalcException::CYCLIC_FUNC, arg.value);
+                        }
+                    }
+                }
+                for (const Token& var: isVariable){
+                    for (const Token& arg: args){
+                        if (arg.tokenType == Token::VAR && var.value == arg.value){
                             throw CalcException(CalcException::CYCLIC_FUNC, arg.value);
                         }
                     }
@@ -155,9 +163,20 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
             }
             break;
         case Token::VAR:
+            args.clear();
+            args = funcHandler->getFunc(token.value, {});
+            for (const Token& var: isVariable){
+                for (const Token& arg: args){
+                    if (arg.tokenType == Token::VAR && var.value == arg.value){
+                        throw CalcException(CalcException::CYCLIC_FUNC, arg.value);
+                    }
+                }
+            }
+            isVariable.push_back(token);
             !buffer.empty() ?
-                buffer.back().push_back(sumUp(funcHandler->getFunc(token.value, {}))) :
-                outputStack.push_back(sumUp(funcHandler->getFunc(token.value, {})));
+                buffer.back().push_back(sumUp(args)) :
+                outputStack.push_back(sumUp(args));
+            isVariable.pop_back();
             break;
         case Token::FUNC:
             isFunction.push_back(token);
@@ -174,6 +193,10 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
             operatorStack.push_back(token);
             break;
         default:
+            break;
+        case Token::UNDEFINED:
+            break;
+        case Token::ARG:
             break;
     }
 }

@@ -7,7 +7,7 @@ using namespace std;
 class ShuntingYard {
 public:
 
-    ShuntingYard(FuncHandler *funcHandler) : funcHandler(funcHandler), isFunction(vector<Token>()) { };
+    ShuntingYard(FuncHandler *funcHandler) : funcHandler(funcHandler), isFunction(vector<Token>()), isVariable(vector<Token>()) { };
 
     double sumUp(const vector<Token> &input);
 
@@ -24,4 +24,5 @@ private:
 
     FuncHandler *funcHandler;
     vector<Token> isFunction;
+    vector<Token> isVariable;
 };
