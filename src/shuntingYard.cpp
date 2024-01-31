@@ -1,4 +1,3 @@
-#include <iostream>
 #include <string>
 #include <cmath>
 #include "token.h"
@@ -25,7 +24,7 @@ bool ShuntingYard::areParentheses(const vector<Token> &input) {
 
 double ShuntingYard::sumUp(const vector<Token> &input) {
     if (!areParentheses(input)){
-        throw CalcException(CalcException::SYNTAX_ERROR, "Неправильное расположение скобок");
+        throw CalcException(CalcException::BAD_PARANTHESIS);
     }
     vector<Token> operatorStack;
     vector<double> outputStack;
