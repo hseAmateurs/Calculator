@@ -44,6 +44,8 @@ double ShuntingYard::sumUp(const vector<Token> &input) {
         compute(buffer, operatorStack, outputStack, token, isSecondLoop);
         i++;
     }
+    if (outputStack.size() > 1 || outputStack.empty())
+        throw(CalcException(CalcException::UNEXPECTED_ERROR, "Неправильное выражение"));
     return outputStack.back();
 }
 
