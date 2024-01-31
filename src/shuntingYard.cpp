@@ -180,7 +180,3 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
 void ShuntingYard::clear() {
     isFunction.clear();
 }
-
-ShuntingYard::~ShuntingYard() {
-    delete funcHandler;
-}
