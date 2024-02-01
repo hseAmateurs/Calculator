@@ -22,12 +22,6 @@ int countEqualSign(const MathExpr &expr) {
 }
 
 int main() {
-//    printf("\n");
-//    printf("\x1B[31mTexting\033[0m\t\t");
-//    printf("\x1B[32mTexting\033[0m\t\t");
-//    printf("\x1B[33mTexting\033[0m\t\t");
-//    printf("\x1B[34mTexting\033[0m\t\t");
-//    printf("\x1B[35mTexting\033[0m\n");
     setbuf(stdout, 0);
     std::cout << "Добро пожаловать в калькулятор!\n"
                  "Введите \x1B[35mhelp\033[0m, чтобы посмотреть список встроенных функций.\n"
