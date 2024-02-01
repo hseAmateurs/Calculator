@@ -15,6 +15,8 @@ void FuncHandler::addFunc(std::string &name, const int argsCount, const std::vec
 #ifdef DEBUG
     std::cout << "addFunc: " << name << " " << argsCount << " " << tokens.size() << "\n";
 #endif
+    if(name == "exit" || name == "help")
+        throw CalcException(CalcException::RESERVED_FUNC);
     if (isBuiltInFunc(name)) {
         if (tokens.empty()) return;
         else
@@ -98,17 +100,17 @@ std::vector<Token> FuncHandler::getFunc(const std::string &name, const std::vect
 }
 
 void FuncHandler::printUndeclaredFunc() const {
-    std::cerr << "Вы не объявили функции/переменные:\n";
+    std::cout << "\x1B[31mВы не объявили функции/переменные:\n";
     bool first = true;
     for (const auto &el: functions) {
         if (!el.second.second.empty()) continue;
         if (first) {
-            std::cerr << el.first;
+            std::cout << el.first;
             first = false;
         }
-        else std::cerr << ", " << el.first;
+        else std::cout << ", " << el.first;
     }
-    std::cerr << std::endl;
+    std::cout << "\033[0m\n";
 }
 
 double FuncHandler::funcCalc(const std::string &name, const double x) const {
@@ -176,8 +178,10 @@ double FuncHandler::funcCalc(const std::string &name, const double x) const {
 
 std::string FuncHandler::toLower(const std::string &str) {
     std::string res;
-    for (const char &c: str)
+    for (const char &c: str) {
+        if(std::isspace(c)) continue;
         res += std::tolower(c);
+    }
     return res;
 }
 
@@ -187,4 +191,17 @@ bool FuncHandler::isBuiltInFunc(const std::string &name) const {
 
 void FuncHandler::clear() {
     functions.clear();
+}
+
+void FuncHandler::printBuiltInFunc() const {
+    std::cout << "Вам доступны следующие встроенные функции и перменные:\n";
+    bool first = true;
+    for(const auto & name : builtInFunctions) {
+        if(first) {
+            first = false;
+            std::cout << name;
+        }
+        std::cout << ", " << name;
+    }
+    std::cout << "\n\n";
 }

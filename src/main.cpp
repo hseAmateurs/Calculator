@@ -22,7 +22,17 @@ int countEqualSign(const MathExpr &expr) {
 }
 
 int main() {
+//    printf("\n");
+//    printf("\x1B[31mTexting\033[0m\t\t");
+//    printf("\x1B[32mTexting\033[0m\t\t");
+//    printf("\x1B[33mTexting\033[0m\t\t");
+//    printf("\x1B[34mTexting\033[0m\t\t");
+//    printf("\x1B[35mTexting\033[0m\n");
     setbuf(stdout, 0);
+    std::cout << "Добро пожаловать в калькулятор!\n"
+                 "Введите \x1B[35mhelp\033[0m, чтобы посмотреть список встроенных функций.\n"
+                 "Введите \x1B[31mexit\033[0m, чтобы выйти.\n\n";
+
     // Класс обработки функций
     FuncHandler funcHandler;
     ShuntingYard shuntingYard(&funcHandler);
@@ -42,8 +52,8 @@ int main() {
     bool clearInput = true;
     bool isRun = true;
     while (isRun) {
-        if(clearInput) std::cout << "Введите пример:\n";
-        else std::cout << "Продолжите ввод:\n";
+        if (clearInput) std::cout << "\x1B[32mВведите пример:\033[0m\n";
+        else std::cout << "\x1B[33mПродолжите ввод:\033[0m\n";
         clearInput = true;
         try {
             // Цикл работает, пока таблица функций не будет полностью объявлена
@@ -54,11 +64,11 @@ int main() {
                         throw TokenizeException(TokenizeException::NO_MAIN);
                     else {
                         funcHandler.printUndeclaredFunc();
-                        std::cout << "Продолжите ввод:\n";
+                        std::cout << "\n\x1B[33mПродолжите ввод:\033[0m\n";
                     }
                     continue;
                 }
-                if(FuncHandler::toLower(expression) == "exit") {
+                if (FuncHandler::toLower(expression) == "exit") {
                     isRun = false;
                     break;
                 }
@@ -70,6 +80,10 @@ int main() {
                     funcHandler.addFunc(funcName, argsCount, funcTokens);
                 }
                 else if (countEqual == 0) {
+                    if (FuncHandler::toLower(expression) == "help") {
+                        funcHandler.printBuiltInFunc();
+                        break;
+                    }
                     if (isMain)
                         throw TokenizeException(TokenizeException::DUBLICATE_MAIN);
                     tokens = std::get<0>(expression.tokenize(MathExpr::MAIN));
@@ -80,29 +94,26 @@ int main() {
                     throw TokenizeException(TokenizeException::SYNTAX_ERROR);
                 }
             }
-            if(!isRun) continue;
+            if (!isRun) continue;
+            if (tokens.empty()) continue;
             double res = shuntingYard.sumUp(tokens);
-            std::cout << "Ответ:\n" <<  res - remainder(res, 0.0001) << "\n";
+            std::cout << "Ответ:\n" << res - remainder(res, 0.0001) << "\n";
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
-        catch (const TokenizeException &ex) {
-            std::cerr << "Ошибка: " << ex.desc() << "\n";
-            if(!ex.message.empty())
-                std::cerr << "< " << ex.message << " >\n";
-            std::cerr.flush();
-            clearInput = false;
-        }
         catch (const CalcException &ex) {
-            std::cerr << "Ошибка: " << ex.desc() << "\n";
-            if(!ex.message.empty())
-                std::cerr << "< " << ex.message << " >\n";
-            std::cerr << std::endl;
-            std::cerr.flush();
+            std::cout << "\n\x1B[31mОшибка: " << ex.desc() << "\n";
+            if (!ex.message.empty())
+                std::cout << "< " << ex.message << " >\n";
+            std::cout << "\033[0m\n";
+
+            if (typeid(ex) == typeid(TokenizeException))
+                clearInput = false;
         }
-        if(isRun && clearInput) {
+        if (isRun && clearInput) {
             isMain = false;
             funcHandler.clear();
             shuntingYard.clear();
+            tokens.clear();
         }
     }
     return 0;

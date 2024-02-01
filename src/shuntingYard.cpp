@@ -4,8 +4,6 @@
 #include "shuntingYard.h"
 #include "calcException.h"
 
-using namespace std;
-
 bool ShuntingYard::areParentheses(const vector<Token> &input) {
     vector<Token> parenthesesStack;
     for (const Token& token: input){
@@ -138,7 +136,7 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
             if (operatorStack.back().tokenType == Token::FUNC) {
                 args.clear();
                 for (const auto &val: buffer.back())
-                    args.emplace_back(to_string(val), Token::DOUBLE);
+                    args.emplace_back(std::to_string(val), Token::DOUBLE);
                 args = funcHandler->getFunc(operatorStack.back().value, args);
                 for (const Token& func: isFunction){
                     for (const Token& arg: args) {

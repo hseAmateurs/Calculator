@@ -34,6 +34,8 @@ public:
     // Вывод необъявленных функций
     void printUndeclaredFunc() const;
 
+    void printBuiltInFunc() const;
+
     static std::string toLower(const std::string &str);
 
     void clear();

@@ -29,7 +29,8 @@ public:
         NO_MAIN,
         BAD_PARANTHESIS,
         CYCLIC_FUNC,
-        BAD_D
+        BAD_D,
+        RESERVED_FUNC
     };
 
     explicit CalcException(Type type, std::string message = "") : type(type), message(std::move(message)) { };
@@ -59,7 +60,8 @@ private:
             "Вы не ввели основное выражение",
             "Некорректная расстановка скобок",
             "Зацикленный вызов фукнций",
-            "Не учтена область определения"
+            "Не учтена область определения",
+            "Вы не можете использовать зарезервированные имена"
     };
 };
 

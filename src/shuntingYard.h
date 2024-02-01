@@ -2,7 +2,7 @@
 #include "token.h"
 #include "funcHandler.h"
 
-using namespace std;
+using std::vector;
 
 class ShuntingYard {
 public:
