@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.26)
 project(Calculator)
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
 
 #add_compile_definitions(DEBUG)
 
@@ -20,5 +19,9 @@ set(SOURCE_FILES
 )
 
 add_executable(Calculator ${SOURCE_FILES})
+
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
+endif()
 
 target_link_libraries(Calculator m)

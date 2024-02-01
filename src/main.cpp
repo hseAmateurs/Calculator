@@ -2,11 +2,14 @@
 // Created by Shon on 17.01.2024.
 //
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
 #include <iostream>
 #include <vector>
 #include <limits>
 #include <cmath>
-#include <windows.h>
 #include "token.h"
 #include "mathExpr.h"
 #include "funcHandler.h"
@@ -24,8 +27,10 @@ int countEqualSign(const MathExpr &expr) {
 
 int main() {
 //    setbuf(stdout, 0);
+#ifdef _WIN32
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
+#endif
     std::cout << "Добро пожаловать в калькулятор!\n"
                  "Введите \x1B[35mhelp\033[0m, чтобы посмотреть список встроенных функций.\n"
                  "Введите \x1B[31mexit\033[0m, чтобы выйти.\n\n";
