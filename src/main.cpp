@@ -4,9 +4,15 @@
 
 #include <iostream>
 #include <vector>
+#include <limits>
+#include <cmath>
+#include <windows.h>
 #include "token.h"
 #include "mathExpr.h"
 #include "funcHandler.h"
+#include "shuntingYard.h"
+#include "calcException.h"
+#include "tokenizeException.h"
 
 // Подсчёт кол-ва знаков =
 int countEqualSign(const MathExpr &expr) {
@@ -15,15 +21,18 @@ int countEqualSign(const MathExpr &expr) {
         if (ch == '=') count++;
     return count;
 }
-/*
-f(x, y) = x + a + y
-y1 = f(1, a) + 8 * (7 - 7)
-f(tr(1, 2), 1) + a + y1
- */
+
 int main() {
-    setbuf(stdout, 0);
+//    setbuf(stdout, 0);
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    std::cout << "Добро пожаловать в калькулятор!\n"
+                 "Введите \x1B[35mhelp\033[0m, чтобы посмотреть список встроенных функций.\n"
+                 "Введите \x1B[31mexit\033[0m, чтобы выйти.\n\n";
+
     // Класс обработки функций
     FuncHandler funcHandler;
+    ShuntingYard shuntingYard(&funcHandler);
 
     // Класс токенизации выражений
     MathExpr expression;
@@ -36,44 +45,70 @@ int main() {
     std::string funcName;
     int argsCount;
     std::vector<Token> funcTokens;
-    // Цикл работает, пока таблица функций не будет полностью объявлена
-    while (!isMain || !funcHandler.isFiled()) {
-        getline(std::cin, expression);
-        if (expression.empty()) {
-            if (!isMain)
-                std::cout << "Вы не ввели основное выражение\n";
-            else
-                funcHandler.printUndeclaredFunc();
-            continue;
-        }
-        int countEqual = countEqualSign(expression);
-        if (countEqual == 1) {
-            std::tie(funcTokens, funcName, argsCount) = expression.tokenize(MathExpr::SECONDARY);
-            // Факторизация необходима для отслеживания, необъявленных функций
-            funcHandler.factorizeFunc(funcTokens);
-            funcHandler.addFunc(funcName, argsCount, funcTokens);
-        }
-        else if (countEqual == 0) {
-            if (isMain) {
-                std::cerr << "Вы уже вводили главное выражение";
-                exit(-1);
+
+    bool clearInput = true;
+    bool isRun = true;
+    while (isRun) {
+        if (clearInput) std::cout << "\x1B[32mВведите пример:\033[0m\n";
+        else std::cout << "\x1B[33mПродолжите ввод:\033[0m\n";
+        clearInput = true;
+        try {
+            // Цикл работает, пока таблица функций не будет полностью объявлена
+            while (!isMain || !funcHandler.isFiled()) {
+                getline(std::cin, expression);
+                if (expression.empty()) {
+                    if (!isMain) throw TokenizeException(TokenizeException::NO_MAIN);
+                    else funcHandler.raiseUndeclaredFunc();
+                }
+                if (FuncHandler::toLower(expression) == "exit") {
+                    isRun = false;
+                    break;
+                }
+                int countEqual = countEqualSign(expression);
+                if (countEqual == 1) {
+                    std::tie(funcTokens, funcName, argsCount) = expression.tokenize(MathExpr::SECONDARY);
+                    // Факторизация необходима для отслеживания, необъявленных функций
+                    funcHandler.factorizeFunc(funcTokens);
+                    funcHandler.addFunc(funcName, argsCount, funcTokens);
+                }
+                else if (countEqual == 0) {
+                    if (FuncHandler::toLower(expression) == "help") {
+                        funcHandler.printBuiltInFunc();
+                        tokens.clear();
+                        clearInput = false;
+                        break;
+                    }
+                    if (isMain)
+                        throw TokenizeException(TokenizeException::DUBLICATE_MAIN);
+                    tokens = std::get<0>(expression.tokenize(MathExpr::MAIN));
+                    funcHandler.factorizeFunc(tokens);
+                    isMain = true;
+                }
+                else {
+                    throw TokenizeException(TokenizeException::SYNTAX_ERROR);
+                }
             }
-            tokens = std::get<0>(expression.tokenize(MathExpr::MAIN));
-            funcHandler.factorizeFunc(tokens);
-            isMain = true;
+            if (!isRun) continue;
+            if (tokens.empty()) continue;
+            double res = shuntingYard.sumUp(tokens);
+            std::cout << "Ответ:\n" << res - remainder(res, 0.0001) << "\n";
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
-        else {
-            std::cerr << "Синтаксическая ошибка";
-            exit(-1);
+        catch (const CalcException &ex) {
+            std::cout << "\n\x1B[31mОшибка: " << ex.desc() << "\n";
+            if (!ex.message.empty())
+                std::cout << "< " << ex.message << " >\n";
+            std::cout << "\033[0m\n";
+
+            if (typeid(ex) == typeid(TokenizeException))
+                clearInput = false;
+        }
+        if (isRun && clearInput) {
+            isMain = false;
+            funcHandler.clear();
+            shuntingYard.clear();
+            tokens.clear();
         }
     }
-
-//    for (const auto & token : tokens) {
-//        std::cout << token.value << " "
-//                  << token.tokenType << " "
-//                  << token.operatorType << " "
-//                  << (int)token.operatorPriority << std::endl;
-//    }
-    std::cout << "end\n";
     return 0;
 }

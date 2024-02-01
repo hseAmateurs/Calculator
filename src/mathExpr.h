@@ -42,8 +42,6 @@ private:
 
     bool isOperator(const char &target) const;
 
-    bool error(const std::string &msg) const;
-
     std::map<char, char> operatorPriority = {
             {'-', 1},
             {'+', 1},

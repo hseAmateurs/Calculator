@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.26)
 project(Calculator)
 
 set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
+
+#add_compile_definitions(DEBUG)
 
 set(SOURCE_FILES
         src/main.cpp
@@ -10,6 +13,10 @@ set(SOURCE_FILES
         src/token.h
         src/funcHandler.cpp
         src/funcHandler.h
+        src/shuntingYard.cpp
+        src/shuntingYard.h
+        src/calcException.h
+        src/tokenizeException.h
 )
 
 add_executable(Calculator ${SOURCE_FILES})
