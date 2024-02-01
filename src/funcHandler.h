@@ -46,6 +46,8 @@ private:
     // Вычисления встроенных функций
     double funcCalc(const std::string &funcName, double x) const;
 
+    const double accuracy = 1e-5;
+
     std::map<std::string, std::pair<int, std::vector<Token>>> functions;
 
     std::vector<std::string> builtInFunctions = {"pi", "e",

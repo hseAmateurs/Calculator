@@ -28,7 +28,8 @@ public:
         DUBLICATE_MAIN,
         NO_MAIN,
         BAD_PARANTHESIS,
-        CYCLIC_FUNC
+        CYCLIC_FUNC,
+        BAD_D
     };
 
     explicit CalcException(Type type, std::string message = "") : type(type), message(std::move(message)) { };
@@ -57,7 +58,8 @@ private:
             "Вы уже вводили главное выражение",
             "Вы не ввели основное выражение",
             "Некорректная расстановка скобок",
-            "Зацикленный вызов фукнций"
+            "Зацикленный вызов фукнций",
+            "Не учтена область определения"
     };
 };
 

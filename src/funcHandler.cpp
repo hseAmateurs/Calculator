@@ -113,7 +113,6 @@ void FuncHandler::printUndeclaredFunc() const {
 
 double FuncHandler::funcCalc(const std::string &name, const double x) const {
     double res = NAN;
-    const double accuracy = 1e-5;
     if (name == "pi") {
         res = M_PI;
     }
@@ -171,7 +170,7 @@ double FuncHandler::funcCalc(const std::string &name, const double x) const {
     }
     else throw CalcException(CalcException::UNDECLARED_FUNC, name);
     if (std::isnan(res))
-        throw CalcException(CalcException::BAD_ARGS, name);
+        throw CalcException(CalcException::BAD_D, name);
     return res;
 }
 

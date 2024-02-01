@@ -70,6 +70,8 @@ void ShuntingYard::computeOnce(vector<double> &outputStack, const Token &token) 
                     outputStack.push_back(a * b);
                     break;
                 case '/':
+                    if(a < 1e-5)
+                        throw CalcException(CalcException::BAD_D);
                     outputStack.push_back(b / a);
                     break;
                 case '^':
