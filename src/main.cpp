@@ -60,13 +60,8 @@ int main() {
             while (!isMain || !funcHandler.isFiled()) {
                 getline(std::cin, expression);
                 if (expression.empty()) {
-                    if (!isMain)
-                        throw TokenizeException(TokenizeException::NO_MAIN);
-                    else {
-                        funcHandler.printUndeclaredFunc();
-                        std::cout << "\n\x1B[33mПродолжите ввод:\033[0m\n";
-                    }
-                    continue;
+                    if (!isMain) throw TokenizeException(TokenizeException::NO_MAIN);
+                    else funcHandler.raiseUndeclaredFunc();
                 }
                 if (FuncHandler::toLower(expression) == "exit") {
                     isRun = false;
@@ -82,6 +77,8 @@ int main() {
                 else if (countEqual == 0) {
                     if (FuncHandler::toLower(expression) == "help") {
                         funcHandler.printBuiltInFunc();
+                        tokens.clear();
+                        clearInput = false;
                         break;
                     }
                     if (isMain)

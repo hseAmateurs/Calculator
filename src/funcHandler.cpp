@@ -99,18 +99,18 @@ std::vector<Token> FuncHandler::getFunc(const std::string &name, const std::vect
     return tokens;
 }
 
-void FuncHandler::printUndeclaredFunc() const {
-    std::cout << "\x1B[31mВы не объявили функции/переменные:\n";
+void FuncHandler::raiseUndeclaredFunc() const {
+    std::string msg;
     bool first = true;
     for (const auto &el: functions) {
         if (!el.second.second.empty()) continue;
         if (first) {
-            std::cout << el.first;
+            msg += el.first;
             first = false;
         }
-        else std::cout << ", " << el.first;
+        else msg += ", " + el.first;
     }
-    std::cout << "\033[0m\n";
+    throw TokenizeException(CalcException::UNDECLARED_FUNC, msg);
 }
 
 double FuncHandler::funcCalc(const std::string &name, const double x) const {

@@ -32,7 +32,7 @@ public:
     std::vector<Token> getFunc(const std::string &name, const std::vector<Token> &args);
 
     // Вывод необъявленных функций
-    void printUndeclaredFunc() const;
+    void raiseUndeclaredFunc() const;
 
     void printBuiltInFunc() const;
 
