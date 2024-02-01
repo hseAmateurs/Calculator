@@ -201,7 +201,7 @@ void FuncHandler::printBuiltInFunc() const {
             first = false;
             std::cout << name;
         }
-        std::cout << ", " << name;
+        else std::cout << ", " << name;
     }
     std::cout << "\n\n";
 }
