@@ -171,7 +171,7 @@ double FuncHandler::funcCalc(const std::string &name, const double x) const {
         res = M_PI / 2 - std::atan(x);
     }
     else throw CalcException(CalcException::UNDECLARED_FUNC, name);
-    if (std::isnan(res))
+    if (std::isnan(res) || std::isinf(res))
         throw CalcException(CalcException::BAD_D, name);
     return res;
 }

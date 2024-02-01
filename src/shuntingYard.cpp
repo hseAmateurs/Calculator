@@ -6,10 +6,10 @@
 
 bool ShuntingYard::areParentheses(const vector<Token> &input) {
     vector<Token> parenthesesStack;
-    for (const Token& token: input){
+    for (const Token &token: input) {
         if (token.tokenType == Token::L_PARANTHESIS)
             parenthesesStack.push_back(token);
-        else if (token.tokenType == Token::R_PARANTHESIS){
+        else if (token.tokenType == Token::R_PARANTHESIS) {
             if (!parenthesesStack.empty() && parenthesesStack.back().tokenType == Token::L_PARANTHESIS)
                 parenthesesStack.pop_back();
             else
@@ -21,7 +21,7 @@ bool ShuntingYard::areParentheses(const vector<Token> &input) {
 }
 
 double ShuntingYard::sumUp(const vector<Token> &input) {
-    if (!areParentheses(input)){
+    if (!areParentheses(input)) {
         throw CalcException(CalcException::BAD_PARANTHESIS);
     }
     vector<Token> operatorStack;
@@ -42,7 +42,7 @@ double ShuntingYard::sumUp(const vector<Token> &input) {
         i++;
     }
     if (outputStack.size() > 1 || outputStack.empty())
-        throw(CalcException(CalcException::UNEXPECTED_ERROR, "Неправильное выражение"));
+        throw (CalcException(CalcException::UNEXPECTED_ERROR, "Неправильное выражение"));
     return outputStack.back();
 }
 
@@ -51,37 +51,39 @@ void ShuntingYard::computeOnce(vector<double> &outputStack, const Token &token) 
     outputStack.pop_back();
     double b = outputStack.back();
     outputStack.pop_back();
-    switch (token.operatorType) {
-        case Token::UNARY:
-            outputStack.push_back(b);
-            outputStack.push_back(-a);
-            break;
-        case Token::BINARY:
-            switch (token.value[0]) {
-                case '+':
-                    outputStack.push_back(a + b);
-                    break;
-                case '-':
-                    outputStack.push_back(b - a);
-                    break;
-                case '*':
-                    outputStack.push_back(a * b);
-                    break;
-                case '/':
-                    if(a < 1e-5)
-                        throw CalcException(CalcException::BAD_D);
-                    outputStack.push_back(b / a);
-                    break;
-                case '^':
-                    outputStack.push_back(pow(b, a));
-                    break;
-                default:
-                    throw CalcException(CalcException::UNEXPECTED_ERROR, token.value);
-            }
-            break;
-        default:
-            throw CalcException(CalcException::UNEXPECTED_ERROR, token.value);
+    if (token.operatorType == Token::UNARY) {
+        outputStack.push_back(b);
+        outputStack.push_back(-a);
     }
+    else if (token.operatorType == Token::BINARY) {
+        double res = NAN;
+        switch (token.value[0]) {
+            case '+':
+                res = a + b;
+                break;
+            case '-':
+                res = b - a;
+                break;
+            case '*':
+                res = a * b;
+                break;
+            case '/':
+                res = b / a;
+                break;
+            case '^':
+                res = pow(b, a);
+                break;
+            default:
+                throw CalcException(CalcException::UNEXPECTED_ERROR, token.value);
+        }
+        if (std::isnan(res) || std::isinf(res)) {
+            std::string msg = std::to_string(b) + token.value[0] + std::to_string(a);
+            throw CalcException(CalcException::BAD_D, msg);
+        }
+        outputStack.push_back(res);
+    }
+    else
+        throw CalcException(CalcException::UNEXPECTED_ERROR, token.value);
 }
 
 void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operatorStack, vector<double> &outputStack,
@@ -101,7 +103,7 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
                 case Token::UNARY:
                     if (!isSecondLoop)
                         operatorStack.push_back(token);
-                    else{
+                    else {
                         outputStack.back() = -1 * outputStack.back();
                         operatorStack.pop_back();
                     }
@@ -138,16 +140,16 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
                 for (const auto &val: buffer.back())
                     args.emplace_back(std::to_string(val), Token::DOUBLE);
                 args = funcHandler->getFunc(operatorStack.back().value, args);
-                for (const Token& func: isFunction){
-                    for (const Token& arg: args) {
+                for (const Token &func: isFunction) {
+                    for (const Token &arg: args) {
                         if (arg.tokenType == Token::FUNC && func.value == arg.value) {
                             throw CalcException(CalcException::CYCLIC_FUNC, arg.value);
                         }
                     }
                 }
-                for (const Token& var: isVariable){
-                    for (const Token& arg: args){
-                        if (arg.tokenType == Token::VAR && var.value == arg.value){
+                for (const Token &var: isVariable) {
+                    for (const Token &arg: args) {
+                        if (arg.tokenType == Token::VAR && var.value == arg.value) {
                             throw CalcException(CalcException::CYCLIC_FUNC, arg.value);
                         }
                     }
@@ -165,17 +167,17 @@ void ShuntingYard::compute(vector<vector<double>> &buffer, vector<Token> &operat
         case Token::VAR:
             args.clear();
             args = funcHandler->getFunc(token.value, {});
-            for (const Token& var: isVariable){
-                for (const Token& arg: args){
-                    if (arg.tokenType == Token::VAR && var.value == arg.value){
+            for (const Token &var: isVariable) {
+                for (const Token &arg: args) {
+                    if (arg.tokenType == Token::VAR && var.value == arg.value) {
                         throw CalcException(CalcException::CYCLIC_FUNC, arg.value);
                     }
                 }
             }
             isVariable.push_back(token);
             !buffer.empty() ?
-                buffer.back().push_back(sumUp(args)) :
-                outputStack.push_back(sumUp(args));
+            buffer.back().push_back(sumUp(args)) :
+            outputStack.push_back(sumUp(args));
             isVariable.pop_back();
             break;
         case Token::FUNC:
