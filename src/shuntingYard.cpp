@@ -10,7 +10,7 @@ bool ShuntingYard::areParentheses(const vector<Token> &input) {
         if (token.tokenType == Token::L_PARANTHESIS)
             parenthesesStack.push_back(token);
         else if (token.tokenType == Token::R_PARANTHESIS){
-            if (parenthesesStack.back().tokenType == Token::L_PARANTHESIS)
+            if (!parenthesesStack.empty() && parenthesesStack.back().tokenType == Token::L_PARANTHESIS)
                 parenthesesStack.pop_back();
             else
                 return false;
